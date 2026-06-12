@@ -1,0 +1,92 @@
+﻿@using TestPrototype.SharedUI.Components.Common
+@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Services
+@inject NavigationManager NavManager
+@inject IFeedService FeedService
+@page "/"
+
+@inject CategoryStateService CategoryState
+@implements IDisposable
+
+<div class="home-container d-flex flex-column">
+	<CategoryNav />
+    <div class="post-container d-flex flex-column justify-content-center gap-4 w-100 ">
+        @if (isLoading)
+        {
+            <p class="mt-2">載入中...</p>
+        }
+        else if (!FilteredPosts.Any())
+        {
+            <div class="text-center text-muted my-5">
+                <p class="mt-2">這個分類目前還沒有貼文喔！</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var post in FilteredPosts)
+            {
+                <PostCard PostData="post" />
+            }
+        }
+    </div>
+</div>
+
+@code{
+    //接收網址上的 ?tag= 參數
+    [SupplyParameterFromQuery(Name = "tag")]
+    public string? SearchTag { get; set; }
+    private bool isLoading = true;
+    private List<PostDto>? AllPosts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CategoryState.OnChange += HandleCategoryChanged;
+        FeedService.OnFeedUpdated += RefreshFeed;
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        AllPosts = await FeedService.GetTimelineAsync();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async void RefreshFeed()
+    {
+        await LoadData();
+    }
+
+    private IEnumerable<PostDto> FilteredPosts
+    {
+        get
+        {
+            var posts = AllPosts.AsEnumerable();
+
+            // 如果有帶 tag 參數，就把符合該 tag 的貼文「排在最前面」(置頂)
+            if (!string.IsNullOrEmpty(SearchTag))
+            {
+                posts = posts.OrderByDescending(p => p.Content.Contains(SearchTag));
+            }
+
+            if (CategoryState.SelectedCategory == "綜合大廳")
+            {
+                return posts;
+            }
+            return posts.Where(p => p.Category == CategoryState.SelectedCategory);
+        }
+    }
+
+    private void HandleCategoryChanged()
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        CategoryState.OnChange -= HandleCategoryChanged;
+        FeedService.OnFeedUpdated -= RefreshFeed;
+    }
+}
+

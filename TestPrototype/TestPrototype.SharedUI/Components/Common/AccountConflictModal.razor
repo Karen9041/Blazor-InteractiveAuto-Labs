@@ -1,0 +1,64 @@
+﻿@inject ConflictModalService ConflictService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject HttpClient _httpClient
+@implements IDisposable
+
+@if (ConflictService.IsVisible)
+{
+	<div class="modal-overlay">
+		<div class="modal-content">
+			<h3>偵測到不同帳號登入請求</h3>
+			<p>您目前已登入，接收到了新的 App 授權</p>
+			<p>請問您要切換帳號，還是保持目前狀態？</p>
+			<div>
+				<button @onclick="SwitchAccount">
+					切換為新帳號
+				</button>
+				<button @onclick="KeepCurrentAccount">
+					保持目前帳號
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+@code{
+	protected override void OnInitialized()
+	{
+		ConflictService.OnStateChanged += StateHasChanged;		
+	}
+
+	public void Dispose()
+	{
+		ConflictService.OnStateChanged -= StateHasChanged;
+	}
+
+	private async Task SwitchAccount()
+	{
+		var ticket = ConflictService.NewTicket;
+
+		//1.執行登出
+		await AuthService.LogoutAsync();
+		//2.發送新ticket登入請求
+		var success = await AuthService.SwitchAccountAsync(new SilentLoginRequestDto { Ticket = ticket });
+
+		if (success)
+		{
+			//3.登入成功，導回首頁
+			NavigationManager.NavigateTo("/");
+			ConflictService.Hide();
+		}
+		else
+		{
+			//4.登入失敗，顯示錯誤訊息（這裡簡化處理）
+			Console.WriteLine("帳號切換失敗");
+		}
+	}
+
+	private void KeepCurrentAccount()
+	{
+		// 直接隱藏衝突視窗，保持目前帳號狀態
+		ConflictService.Hide();
+	}
+}

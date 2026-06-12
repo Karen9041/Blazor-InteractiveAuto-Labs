@@ -1,0 +1,19 @@
+﻿<button class="btn btn-tip d-flex align-items-center" @onclick="HandleTipClick">
+    <i class="bi bi-tip me-1"></i>
+    <span>打賞 J 幣</span>
+</button>
+
+@code {
+    [Parameter] public string PostId { get; set; } = "";
+    [Parameter] public string AuthorName { get; set; } = "";
+
+    // 如果需要父元件知道點擊事件，可以加上這個
+    [Parameter] public EventCallback OnTipClicked { get; set; }
+
+    private async Task HandleTipClick()
+    {
+        // TODO: 未來這裡可以觸發打開「打賞金額選擇」的 Modal
+        // Console.WriteLine($"準備打賞給 {AuthorName} 的貼文: {PostId}");
+        await OnTipClicked.InvokeAsync();
+    }
+}

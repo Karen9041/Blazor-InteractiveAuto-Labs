@@ -1,0 +1,44 @@
+﻿.search-block {
+    max-width: 17rem;
+    max-height: 2.625rem;
+    border: 1px solid rgb(228 228 231);
+    border-radius: 99rem;
+    transition: box-shadow 0.3s ease;
+}
+    .search-block:focus-within {
+        box-shadow: 0 0 0 0.125rem #10b981;
+    }
+
+.bi {
+    display: inline-block;
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width:1.25rem;
+    min-height:1.25rem;
+    background-color: #a1a1aa;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    mask-position: center;
+}
+
+.bi-search {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.3-4.3'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.search-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+    .search-input:focus {
+        border: none;
+    }
+
+    .search-input::placeholder {
+        color: #a1a1aa;
+        font-size: 0.875rem;
+    }

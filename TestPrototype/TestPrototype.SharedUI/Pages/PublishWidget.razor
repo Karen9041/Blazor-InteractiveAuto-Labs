@@ -1,0 +1,224 @@
+﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+@inject NavigationManager NavManager
+@inject ICategoryService CategoryService
+@inject IFeedService FeedService
+@inject PublishStateService PublishState
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="publish-container bg-white d-flex flex-column h-100">
+    @* 頂部 Header *@
+    <div class="publish-header d-flex align-items-center border-bottom w-100 sticky-top gap-2">
+        <i class="bi bi-write"></i>
+        <span class="flex-grow-1">建立新貼文</span>
+        <div class="d-flex align-items-center" @onclick="() => PublishState.Close()">
+            <i class="bi bi-close me-0"></i>
+        </div>
+    </div>
+
+    @if (DetectedActivity != null)
+    {
+        <div class="publish-container-reminder d-flex flex-row w-100">
+            <div class="publish-container-reminder-icon">
+                <i class="bi bi-check"></i>
+            </div>
+			<div class="d-flex flex-column">
+                <span class="publish-container-reminder-textbold">已偵測到最新運動紀錄</span>
+                <span class="publish-container-reminder-text">系統已為您備妥專屬的實境數據卡。撰寫心得並發布吧！</span>
+            </div>
+        </div>
+    }
+
+    @* 中間可滾動內容區 *@
+    <div class="publish-body d-flex flex-column flex-grow-1 overflow-auto p-4 hide-scrollbar">
+        
+        @* 使用者資訊與分類選擇 (Select) *@
+        <select class="form-select body-border category-select p-3 w-100" @bind="DraftPost.Category">
+            @if (Categories != null)
+            {
+                @foreach (var cat in Categories)
+                {
+                    <option value="@cat.Name">@cat.Emoji @cat.Name</option>
+                }
+            }
+        </select>
+
+        @* 文字輸入區 *@
+        <textarea class="form-text body-border p-3"
+                  rows="4" 
+                  placeholder="分享一下剛剛的訓練心得，或是有什麼問題想問大家？"
+                  @bind="DraftPost.Content"></textarea>
+
+        @* 實境數據卡預覽區 *@
+        <div class="p-3 body-border bg-white">
+            <div class="d-flex justify-content-between w-100">
+                <span class="activity-area-text d-flex align-items-center gap-2">
+                    <i class="bi bi-clock"></i> 附加實境數據卡</span>
+                <div class="activity-area-toggle form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="toggleDataCard" 
+                            @bind="isDataCardEnabled" @bind:after="OnToggleChanged">
+                </div>
+            </div>
+            @if (DetectedActivity != null)
+            {
+                <div class="data-card-preview-wrapper @(isDataCardEnabled ? "is-expanded" : "") d-flex flex-column justify-content-center align-items-center">
+            
+                    @* 隱藏的 InputFile 元件*@
+                    <InputFile id="imageUploader" OnChange="LoadFile" accept="image/*" class="d-none" />
+
+                    <div class="background-upload-area position-relative @(string.IsNullOrEmpty(currentBgImageUrl) ? "empty-placeholder" : "")">
+
+                            <ActivityWidget ImageUrl="@currentBgImageUrl" ActivityData="DetectedActivity" IsPreviewMode="true" />
+
+                        @* Hover 時顯示的覆蓋層*@
+                            <div class="hover-upload-overlay d-flex flex-column align-items-center justify-content-center"
+                                    @onclick="TriggerUpload">
+                                <div class="hover-upload-circle p-3">
+                                    <i class="bi bi-upload"></i>
+                                </div>
+                                <span class="hover-upload-overlay-text">上傳專屬照片作為背景</span>
+                            </div>
+                    </div>
+
+                    <span class="data-card-preview-reminder w-100">✨ 點擊圖片，換上你今天拍的帥照吧！</span>
+                </div>
+            }
+        </div>
+
+
+        @* 底部工具列與發布按鈕 *@
+        <button class="btn-publish w-100 body-border py-3" @onclick="Publish">
+            確認發布
+        </button>
+    </div>
+</div>
+
+@code{
+    private List<CategoryDto>? Categories;
+    private PostDto DraftPost { get; set; } = new PostDto {};
+    // 模擬偵測到的數據 (DTO)
+    private ActivityRecordDto? DetectedActivity;
+
+    // 控制 Toggle 狀態
+    private bool isDataCardEnabled = false;
+
+    // 當前上傳圖片的預覽網址 (Base64 或 Blob URL)
+    private string? currentBgImageUrl;
+
+    private IJSObjectReference? module;
+
+    protected override void OnInitialized()
+    {
+        // 模擬數據偵測
+        DetectedActivity = new ActivityRecordDto
+        {
+            Distance = 10.5,
+            Duration = new TimeSpan(1,15,0),
+            HeartRate = 145,
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // 載入 JS 模組
+            try
+            {
+                module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestPrototype.SharedUI/js/publishHelper.js");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"JS載入失敗: {ex.Message}");
+            }
+        }
+    }
+
+    private void OnToggleChanged()
+    {
+        if (isDataCardEnabled)
+        {
+            DraftPost.ActivityData = DetectedActivity;
+            if (string.IsNullOrEmpty(currentBgImageUrl))
+            {
+                //預設背景
+                currentBgImageUrl = "https://images.squarespace-cdn.com/content/v1/607f89e638219e13eee71b1e/1684821560422-SD5V37BAG28BURTLIXUQ/michael-sum-LEpfefQf4rU-unsplash.jpg";
+                DraftPost.ImageUrl = currentBgImageUrl;
+            }
+        }
+        else
+        {
+            DraftPost.ActivityData = null;
+            DraftPost.ImageUrl = null;
+            currentBgImageUrl = null;
+        }
+    }
+
+    private async Task TriggerUpload()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("clickElement", "imageUploader");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ResetForm();
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        var imageFile = e.File;
+        if (imageFile != null)
+        {
+            // 限制大小 (例如 max 5MB)
+            var resizedImage = await imageFile.RequestImageFileAsync("image/png", 800, 800);
+
+            using var stream = resizedImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+
+            // 產生 Base64 預覽網址
+            currentBgImageUrl = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+
+            // 將結果儲存到待發布的貼文中
+            DraftPost.ImageUrl = currentBgImageUrl;
+
+            StateHasChanged(); // 強制刷新畫面
+        }
+    }
+
+    private async Task Publish()
+    {
+        await FeedService.PublishPostAsync(DraftPost);
+		await ResetForm();
+		PublishState.Close();
+    }
+
+    private async Task ResetForm()
+    {
+        var allCategories = await CategoryService.GetCategoriesAsync();
+        Categories = allCategories.Where(c => c.Name != "綜合大廳").ToList();
+        DraftPost = new PostDto();
+
+        if (Categories.Any())
+        {
+            DraftPost.Category = Categories.First().Name;
+        }
+        isDataCardEnabled = false;
+        currentBgImageUrl = null;
+	}
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module != null)
+        {
+            try { await module.DisposeAsync(); } catch { }
+        }
+    }
+}

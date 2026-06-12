@@ -1,0 +1,53 @@
+﻿.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+.avatar-ring {
+    border-radius: 50%;
+    background-color: rgb(228 228 231 / 0.6);
+    border: 2px solid #F4F4F5;
+    box-shadow: 0 0 0 2px #10b981; /* 預設綠色外環 */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+    .avatar-ring.ring-active {
+        /* 有新動態時，變成藍色*/
+        box-shadow: 0 0 0 2px #00f2fe;
+        border: 2px solid white;
+        /* 如果要像 IG 那種漸層框，可以用 background-image 搭配 padding 實作，較進階 */
+    }
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-text {
+    color: #059669;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.avatar-badge {
+    position: absolute;
+    bottom: -12px;
+    right: -10px;
+    width: 60px;
+    height: 20px;
+    background: linear-gradient(45deg, #ff0844 0%, #ffb199 100%);
+    color: white;
+    border-radius: 99rem;
+    border: 1.5px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.5rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    z-index: 2;
+}

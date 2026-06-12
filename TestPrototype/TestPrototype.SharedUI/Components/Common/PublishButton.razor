@@ -1,0 +1,29 @@
+﻿@using TestPrototype.SharedUI.Services
+@inject PublishStateService PublishState
+
+@if(isIconOnly)
+{
+	<div class="btn-icon d-flex flex-column align-items-center gap-1">
+		<button class="btn-icon-circle shadow" @onclick="Open">
+			<span class="bi bi-small bi-plus bg-white"></span>
+		</button>
+		<span class="publish-text">發布</span>
+	</div>
+}
+else
+{
+	<div class="btn-full align-items-end w-100">
+		<button @onclick="Open">
+			<span class="bi bi-big bi-plus p-2 me-2 bg-white"></span>發布紀錄
+		</button>
+	</div>
+}
+
+@code{
+	[Parameter] public bool isIconOnly { get; set; } = false;
+
+	private void Open()
+	{
+		PublishState.Open();
+	}
+}

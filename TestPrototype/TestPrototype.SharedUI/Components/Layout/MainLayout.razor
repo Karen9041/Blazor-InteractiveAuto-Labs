@@ -1,0 +1,96 @@
+﻿@inherits LayoutComponentBase
+@using TestPrototype.SharedUI.Components.Common
+@using TestPrototype.SharedUI.Services
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavManager
+@inject PublishStateService PublishState
+@inject ConflictModalService ConflictService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthService AuthService
+@inject IJSRuntime JS
+
+
+<div class="page d-flex justify-content-center overflow-hidden">
+
+    @*電腦版：左側邊欄*@
+    <aside class="left-sidebar flex-column border-end align-items-end py-4">
+        <div class="left-sidebar-item px-4 mb-4">
+            <Logo />
+        </div>
+        <div class="left-sidebar-item">
+            <NavMenu />
+        </div>
+		<div class="left-sidebar-item px-3">
+            <PublishButton />
+        </div>
+		<div class="left-sidebar-item mt-auto px-3">
+            <UserProfileSummary />
+        </div>
+    </aside>
+
+    @*手機版：頂部 Header*@
+    <header class="mobile-header justify-content-between align-items-center fixed-top border-bottom px-3 py-1">
+        <Logo />
+        <a href="/notification" class="notification"><NotificationBell /></a>
+    </header>
+
+    <main class="position-relative w-100 h-100 bg-white d-flex flex-column">
+        <LoginPrompt />
+        <div class="flex-grow-1 overflow-auto hide-scrollbar">
+            <div class="@AnimationClass w-100 h-100" @key="NavManager.Uri">
+                @Body
+            </div>
+            <div class="publish-overlay position-absolute @(PublishState.IsOpen ? "is-open" : "") w-100 h-100">
+                <PublishWidget />
+            </div>
+        </div>
+    </main>
+
+    @*電腦版：右側邊欄*@
+    <aside class="right-sidebar flex-column border-start">
+        <RightSidebar />
+    </aside>
+
+    @*手機版：底部 Nav*@
+    <div class="mobile-bottom">
+		<BottomNav />
+    </div>
+    <AuthGateKeeper />
+    <AccountConflictModal />
+</div>
+
+@code{
+    private bool isHydrating = true;
+
+    private string AnimationClass => (!OperatingSystem.IsBrowser() || !isHydrating) ? "animate-slide-up" : "";
+
+    protected override void OnInitialized()
+    {
+        //訂閱表單開關事件：當 Service 廣播時，重新渲染畫面
+        PublishState.OnChange += StateHasChanged;
+        //訂閱網址改變事件：只要使用者按了其他頁面，就關閉表單
+        NavManager.LocationChanged += HandleLocationChanged;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender && OperatingSystem.IsBrowser())
+        {
+            isHydrating = false;
+        }
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (PublishState.IsOpen)
+        {
+            PublishState.Close();
+        }
+    }
+
+    public void Dispose()
+    {
+        PublishState.OnChange -= StateHasChanged;
+        NavManager.LocationChanged -= HandleLocationChanged;
+    }
+}

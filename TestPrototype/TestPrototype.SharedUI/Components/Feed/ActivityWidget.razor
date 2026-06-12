@@ -1,0 +1,47 @@
+﻿@using TestPrototype.SharedUI.Models
+
+<div class="activity-wrapper border">
+	@if ( ImageUrl != null)
+	{
+		<img src="@ImageUrl" class="activity-bg-image" alt="Workout Photo" />
+	}
+
+	<div class="activity-overlay"></div>
+
+	@if (ActivityData != null)
+	{
+		<div class="activity-data-container d-flex justify-content-between align-items-end">
+			<div class="@(IsPreviewMode ? " preview-mode" : "" )">
+				<span class="data-category letter-space">DISTANCE</span>
+				<div class="d-flex align-items-baseline gap-1">
+					<span class="data-highlight">@ActivityData.Distance.ToString("0.0")</span>
+					<span class="data-small-item">KM</span>
+				</div>
+			</div>
+			<div class="d-flex flex-column align-items-end @(IsPreviewMode ? " preview-mode" : "")">
+				<span class="data-category">AVG HR</span>
+				<div class="d-flex align-items-baseline">
+					<span class="data-small-item">@ActivityData.HeartRate BPM</span> 
+				</div>
+				<span class="data-category">TIME</span>
+				<div class="d-flex align-items-baseline">
+					<span class="data-small-item">@Time</span>
+				</div>
+			</div>
+		</div>
+	}
+</div>
+
+@code{
+	[Parameter] public string ImageUrl { get; set; } = "";
+	[Parameter] public ActivityRecordDto? ActivityData { get; set; }
+
+	[Parameter] public bool IsPreviewMode { get; set; } = false;
+
+	public string Time;
+
+	protected override async Task OnInitializedAsync()
+	{
+		 Time = $"{(int)ActivityData.Duration.TotalHours}H {ActivityData.Duration.Minutes}M";
+	}
+}

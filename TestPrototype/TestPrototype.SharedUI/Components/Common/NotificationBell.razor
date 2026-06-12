@@ -1,0 +1,33 @@
+﻿@using TestPrototype.SharedUI.Services
+@inject NotificationStateService NotifService
+@implements IDisposable
+
+<div class="d-flex text-decoration-none pt-1" @onclick="OpenNotifications">
+    <div class="position-relative">
+        <i class="bi bi-notification"></i>
+
+        <span class="red-dot position-absolute d-flex justify-content-center align-content-center text-white">
+            @(NotifService.UnreadCount > 99 ? "99+" : NotifService.UnreadCount)
+        </span>
+    </div>
+</div>
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        NotifService.OnChange += StateHasChanged;
+
+        //MainLayout?
+        await NotifService.FetchInitialCountAsync();
+    } 
+
+    private void OpenNotifications()
+    {
+        NotifService.MarkAllAsRead();
+    }
+
+    public void Dispose()
+    {
+        NotifService.OnChange -= StateHasChanged;
+    }
+}

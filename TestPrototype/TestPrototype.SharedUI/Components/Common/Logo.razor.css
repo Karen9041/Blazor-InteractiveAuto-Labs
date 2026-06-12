@@ -1,0 +1,11 @@
+﻿.top-row {
+    height: 5.5rem;
+    padding: 0 1rem;
+}
+
+.navbar-brand {
+    max-width: 16rem;
+    width: 100%;
+    font-size: 2rem;
+    color: black;
+}

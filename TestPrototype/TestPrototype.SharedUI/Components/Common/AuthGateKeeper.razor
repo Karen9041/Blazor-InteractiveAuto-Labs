@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavManager
+@inject IAuthService AuthService
+@inject ConflictModalService ConflictService
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthProvider
+@implements IDisposable
+
+@* 這個元件沒有任何 HTML，它是一個純邏輯的隱形元件 *@
+
+@code {
+    // 網頁第一次載入完畢時觸發 (處理 F5 重新整理 或 外部連結直接點進來)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // 訂閱網址改變事件 (處理 SPA 內部跳轉)
+            NavManager.LocationChanged += OnLocationChanged;
+
+            // 執行第一次的檢查
+            await CheckTicketAsync();
+        }
+    }
+
+    // 當 SPA 內部網址改變時觸發
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // 因為事件是由非同步觸發的，必須用 InvokeAsync 包起來更新 UI 狀態
+        await InvokeAsync(CheckTicketAsync);
+    }
+
+    // 核心攔截邏輯：把它獨立成一個方法，讓大家都能呼叫
+    private async Task CheckTicketAsync()
+    {
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("ticket", out var ticketValue))
+        {
+            var ticketStr = ticketValue.ToString();
+            Console.WriteLine($"[Gatekeeper] 偵測到 Ticket: {ticketStr}");
+
+            try
+            {
+                var authState = await AuthProvider.GetAuthenticationStateAsync();
+                var isAlreadyLoggedIn = authState.User.Identity?.IsAuthenticated ?? false;
+
+                if (isAlreadyLoggedIn)
+                {
+                    Console.WriteLine("[Gatekeeper] 狀態：已登入。呼叫衝突 Modal！");
+                    ConflictService.Show(ticketStr);
+                    await JS.InvokeVoidAsync("history.replaceState", null, "", uri.GetLeftPart(UriPartial.Path));
+                }
+                else
+                {
+                    Console.WriteLine("[Gatekeeper] 狀態：未登入。執行靜默登入 API...");
+                    var requestDto = new SilentLoginRequestDto { Ticket = ticketStr };
+                    var success = await AuthService.SilentLoginAsync(requestDto);
+
+                    if (success)
+                    {
+                        Console.WriteLine("[Gatekeeper] 靜默登入成功！清理網址。");
+                        await JS.InvokeVoidAsync("history.replaceState", null, "", uri.GetLeftPart(UriPartial.Path));
+                    }
+                    else
+                    {
+                        Console.WriteLine("[Gatekeeper] 靜默登入失敗 (API 回傳錯誤)。");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Gatekeeper] 發生嚴重錯誤: {ex.Message}");
+            }
+        }
+    }
+
+    // 元件銷毀時解除安裝，避免記憶體流失 (Memory Leak)
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
+}

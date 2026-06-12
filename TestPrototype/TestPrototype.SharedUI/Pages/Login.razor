@@ -1,0 +1,47 @@
+﻿@page "/login"
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@using TestPrototype.SharedUI.Models
+
+<div class="login-container d-flex flex-column gap-1">
+	<h2>歡迎</h2>
+	<p>請輸入您的帳號密碼</p>
+	<div>
+		<input @bind="username" type="text" placeholder="輸入測試帳號" />
+	</div>
+	<div>
+		<input @bind="password" type="password" placeholder="密碼(隨便打)" />
+	</div>
+	<button @onclick="HandleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "立即登入")</button>
+	@if(!string.IsNullOrEmpty(errorMessage))
+	{
+		<p class="error-message text-danger">@errorMessage</p>
+	}
+</div>
+
+@code{
+	private string username = "";
+	private string password = "";
+	private bool isLoading = false;
+	private string errorMessage = "";
+	
+
+	private async Task HandleLogin()
+	{
+		isLoading = true;
+		errorMessage = "";
+
+		var success = await AuthService.LoginAsync(new LoginRequestDto { Username = username, Password = password });
+
+		if(success)
+		{
+			// 登入成功，導回首頁
+			Navigation.NavigateTo("/");
+		}
+		else
+		{
+			errorMessage = "登入失敗，請檢查帳號密碼";
+		}
+		isLoading = false;
+	}
+}

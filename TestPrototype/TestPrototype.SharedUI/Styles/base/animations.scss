@@ -1,0 +1,41 @@
+﻿/* 定義由下往上滑入並淡入的動畫 */
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 將動畫綁定到這個 class 上 */
+.animate-slide-up {
+    animation: slideUpFadeIn 0.7s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.hide-scrollbar {
+    overflow-x: auto;
+    /* Firefox 專用 */
+    scrollbar-width: none;
+    /* IE/Edge 專用 */
+    -ms-overflow-style: none;
+}
+
+/* Chrome, Safari, Edge (Chromium) 專用 */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.post-content-text-hashtag {
+    font-weight: 700;
+    color: #a1a1aa;
+    cursor: pointer;
+}
+
+.post-content-text-hashtag:hover {
+    color: #52525B;
+    text-decoration: underline;
+}

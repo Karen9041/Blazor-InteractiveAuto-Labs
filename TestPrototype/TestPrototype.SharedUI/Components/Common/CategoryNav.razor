@@ -1,0 +1,75 @@
+﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Services
+
+@inject ICategoryService CategoryService
+@inject CategoryStateService CategoryState
+@implements IDisposable
+
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div @ref="scrollAreaRef" class="category-container border-bottom w-100 sticky-top d-flex gap-2 hide-scrollbar">
+	@if (Categories != null)
+	{
+		@foreach (var category in Categories)
+		{
+			<button class="btn text-nowrap @(IsActive(category.Name) ? "active" : "")" @onclick="() => SelectCategory(category.Name)">
+				@category.Emoji @category.Name
+			</button>
+		}
+	}
+</div>
+
+@code {
+	private IJSObjectReference? module;
+	private ElementReference scrollAreaRef;
+
+	private List<CategoryDto>? Categories;
+
+	private bool IsActive(string categoryName) => CategoryState.SelectedCategory == categoryName;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Categories = await CategoryService.GetCategoriesAsync();
+	}
+
+	protected override void OnInitialized()
+	{
+		CategoryState.OnChange += StateHasChanged;
+	}
+
+	private void SelectCategory(string category)
+	{
+		CategoryState.SelectCategory(category);
+	}
+
+	public void Dispose()
+	{
+		CategoryState.OnChange -= StateHasChanged;
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// 1. 動態載入我們寫在 wwwroot 裡的 JS 檔案
+			module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestPrototype.SharedUI/js/scrollHelper.js");
+
+			// 2. 呼叫檔案裡面的 enableHorizontalScroll 方法
+			if (module != null)
+			{
+				await module.InvokeVoidAsync("enableHorizontalScroll", scrollAreaRef);
+			}
+		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (module != null)
+		{
+			await module.DisposeAsync();
+		}
+	}
+
+}

@@ -1,0 +1,134 @@
+﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Components.Common
+@using TestPrototype.SharedUI.Services
+@using System.Net
+@using System.Text.RegularExpressions
+
+@inject CategoryStateService CategoryState
+@inject LoginModalService LoginModal
+
+<div class="post-card-container">
+    <article class="post-card bg-white w-100 border-bottom">
+        @* 1. Header: 頭像與作者資訊 *@
+        <div class="post-card-header d-flex align-items-center gap-3">
+            <div class="d-flex flex-column @* pb-2 *@">
+                <UserAvatar UserName="@PostData.AuthorName"
+                            ImageUrl="@PostData.AuthorAvatarUrl"
+                            Size="40"
+                            HasNewUpdate="@PostData.AuthorHasNewUpdate"
+                            MembershipRole="@PostData.MembershipRole" />
+            </div>
+            <div class="d-flex flex-column">
+                <span class="post-card-header-author-name">@PostData.AuthorName</span>
+                @if (PostData.Achievements.Any())
+                {
+                    <div class="d-flex gap-1 mb-2">
+                        @foreach (var ach in PostData.Achievements)
+                        {
+                            <span class="achievements d-flex align-items-center">
+                                <i class="bi bi-lightning me-1"></i>@ach
+                            </span>
+                        }
+                    </div>
+                }
+                <div class="post-card-header-detail d-flex">
+                    <span class="">@GetTimeAgo(PostData.PostedTime)</span>
+                    <span class="detail-dot mx-2">·</span>
+                    @if (!string.IsNullOrEmpty(PostData.Category))
+                    {
+                        <span class="detail-category p-0"
+                                @onclick="() => GoToCategory(PostData.Category)">
+                                @PostData.Category
+                        </span>
+                    }
+                </div>
+            </div>
+            <i class="bi bi-three-dots ms-auto mb-auto cursor-pointer"></i>
+        </div>
+
+        @* 2. Body: 文字內容與圖片 *@
+        <div class="post-content mb-3">
+            <p class="post-content-text mb-3">@FormattedContent</p>
+            @if (!string.IsNullOrEmpty(PostData.ImageUrl))
+            {
+                <ActivityWidget ImageUrl="@PostData.ImageUrl" ActivityData="@PostData.ActivityData" />
+            }
+        </div>
+
+        @* 3. Footer: 互動按鈕 *@
+        <div class="post-actions d-flex pt-2 mt-2 gap-4">
+            <div class="action-btn action-btn-like d-flex align-items-center" @onclick="ToggleLike">
+                <i class="bi @(isLiked ? "bi-heart-fill like-active" : "bi-heart")"></i>
+                <span class="@(isLiked ? "color-changed" : "")">@(PostData.LikeCount + (isLiked ? 1 : 0))</span>
+            </div>
+            <div class="action-btn action-btn-Comment d-flex align-items-center">
+                <i class="bi bi-chat"></i> @PostData.CommentCount
+            </div>
+            <div class="action-btn action-btn-share d-flex align-items-center">
+                <i class="bi bi-share"></i> 分享
+            </div>
+            <div class="ms-auto">
+                <TipButton />
+            </div>
+        </div>
+    </article>
+</div>
+
+@code {
+    [Parameter] public PostDto PostData { get; set; } = new();
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthStateTask { get; set; }
+    private bool isLiked = false;
+
+    private async Task ToggleLike() {
+        var authState = await AuthStateTask;
+		var user = authState.User;
+        if (user.Identity == null || !user.Identity.IsAuthenticated)
+        {
+			LoginModal.Show();
+            return;
+		}
+
+        isLiked = !isLiked;
+    }
+
+    private void GoToCategory(string category)
+    {
+        CategoryState.SelectCategory(category);
+    }
+
+    private string GetTimeAgo(DateTime dt) {
+        var span = DateTime.Now - dt;
+        if (span.TotalHours < 1) return $"{(int)span.TotalMinutes} 分前";
+        if (span.TotalDays < 1) return $"{(int)span.TotalHours} 小時前";
+        return dt.ToString("MM/dd");
+    }
+
+    //處理 Hashtag 高亮
+    private MarkupString FormattedContent
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(PostData.Content))
+            {
+                return new MarkupString("");
+            }
+
+            string safeText = WebUtility.HtmlEncode(PostData.Content);
+            // \B# 確保 # 前面是空白或句首，\w+ 抓取所有的英數中文字元
+            string regexPattern = @"\B#\w+";
+
+            string highlightedText = Regex.Replace(safeText, regexPattern, match =>
+            {
+
+                string encodedTag = Uri.EscapeDataString(match.Value);
+
+                return $"<a href=\"?tag={encodedTag}\" class=\"post-content-text-hashtag\">{match.Value}</a>";
+
+            });
+            
+
+            return (MarkupString)highlightedText;
+        }
+    }
+}

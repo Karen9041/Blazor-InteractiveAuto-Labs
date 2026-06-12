@@ -1,0 +1,38 @@
+﻿@* 
+  三個參數讓外部傳入：
+  1. ImageUrl (有照片就傳)
+  2. UserName (沒照片時，用來抓第一個字)
+  3. Size (控制大小，預設 40px)
+*@
+
+<div class="position-relative avatar-container mb-2">
+    <div class="avatar-ring @(HasNewUpdate ? "ring-active" : "")" style="width: @(Size)px; height: @(Size)px;">
+        @if (!string.IsNullOrWhiteSpace(ImageUrl))
+        {
+            <img src="@ImageUrl" alt="@UserName" class="avatar-img" />
+        }
+        else if (!string.IsNullOrWhiteSpace(UserName))
+        {
+            <span class="avatar-text">@UserName.Substring(0, 1).ToUpper()</span>
+        }
+        else
+        {
+            <span class="avatar-text">YOU</span>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(MembershipRole))
+    {
+        <div class="avatar-badge">
+            @MembershipRole
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? ImageUrl { get; set; }
+    [Parameter] public string? UserName { get; set; }
+    [Parameter] public int Size { get; set; } = 36;
+    [Parameter] public string? MembershipRole { get; set; }
+
+    [Parameter] public bool HasNewUpdate { get; set; } = false;
+}

@@ -1,0 +1,28 @@
+﻿@using TestPrototype.SharedUI.Models
+
+@page "/post/{PostId}"
+@if (currentPost == null)
+{
+    <p>載入中，或者找不到該貼文...</p>
+}
+else
+{
+    @* 把抓到的貼文資料，餵給你寫好的 PostCard 元件 *@
+    <PostCard PostData="currentPost" />
+    
+    @* 下方還可以繼續疊加「留言區塊元件」 *@
+    @* <CommentSection PostId="@currentPost.Id" /> *@
+}
+
+@code {
+    // 這個屬性會自動接住網址列上的 {PostId}
+    [Parameter] public string PostId { get; set; }
+
+    private PostDto currentPost;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 拿著身分證，去向後台索取這篇貼文的詳細資料
+        // currentPost = await FeedService.GetPostByIdAsync(PostId);
+    }
+}

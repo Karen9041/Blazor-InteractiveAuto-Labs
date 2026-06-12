@@ -1,0 +1,22 @@
+﻿@using TestPrototype.SharedUI.Components.Common
+
+<div class="nav-scrollable" onclick="document.querySelector('.nav-item').click()">
+    <nav class="flex-column">
+        <div class="nav-item">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house" aria-hidden="true"></span> 大廳動態
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="/app-simulator">
+                <span class="bi bi-person" aria-hidden="true"></span> APP模擬登入
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="/notification">
+                <span class="notification"><NotificationBell /></span>通知
+            </NavLink>
+        </div>
+    </nav>
+</div>
+

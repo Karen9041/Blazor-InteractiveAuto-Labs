@@ -1,0 +1,254 @@
+﻿.bi-write {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-block;
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9'/%3E%3Cpath d='M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+.bi-close {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-block;
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' %3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+
+    cursor:pointer;
+}
+
+.body-border {
+    border: 1px solid #E4E4E7;
+    border-radius: 0.75rem;
+}
+
+.publish-header {
+    color: #18181B;
+    font-size: 1.125rem;
+    font-weight: 900;
+    padding: 1rem 1.25rem;
+    background-color: white;
+}
+
+.publish-container-reminder {
+    background-color: #ecfdf5;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #D1FAE5;
+    gap: 0.75rem;
+}
+
+.publish-container-reminder-icon {
+    height: 2.25rem;
+    width: 2.25rem;
+    background-color: #D1FAE5;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+}
+
+.publish-container-reminder-textbold {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    color: #18181B;
+}
+
+.publish-container-reminder-text {
+    font-size: 0.875rem;
+    color: #52525B;
+    margin-top: 0.125rem;
+}
+
+.bi-check {
+    height: 1.25rem;
+    width: 1.25rem;
+    display: inline-block;
+    background-color: #059669;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+.publish-body {
+    gap: 1.25rem;
+}
+
+.category-select {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #18181B;
+    background-color: rgb(244 244 245 / 0.5);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: all 0.3s ease;
+
+    background-image :none !important;
+
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+    .category-select:hover {
+        background-color: #F4F4F5;
+        cursor: pointer;
+    }
+
+    .category-select:focus-within {
+        border: 1px solid #10b981;
+    }
+
+.form-text {
+    color: #18181B;
+    font-size: 1rem;
+
+    resize: none;
+    outline: none !important;
+    box-shadow: none !important;
+}
+    .form-text:focus-within {
+        border: 1px solid #10b981;
+    }
+
+textarea {
+    min-height: 8.125rem;
+}
+
+    textarea::placeholder {
+        color: #a1a1aa;
+        opacity: 1;
+        font-weight: 400;
+    }
+
+.bi-clock {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    background-color: #10b981;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+.activity-area-text {
+    font-size: 0.875rem;
+    font-weight: 900;
+    color: #18181B;
+}
+
+.activity-area-toggle {
+    font-size: 1.5rem;
+}
+
+.form-check-input {
+    outline: none;
+    cursor: pointer;
+}
+
+    .form-check-input:checked {
+        background-color: #10b981;
+        border: none;
+    }
+
+    .form-check-input:focus {
+        box-shadow: none;
+    }
+
+.data-card-preview-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0;
+}
+
+    .data-card-preview-wrapper.is-expanded {
+        max-height: 1000px;
+        opacity: 1;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+.data-card-preview-activity {
+    height: 19.875rem;
+    width: 19.875rem;
+}
+
+.background-upload-area {
+    width: 19.875rem;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+    .background-upload-area:hover .hover-upload-overlay {
+        opacity: 1;
+    }
+
+        .background-upload-area:hover .hover-upload-overlay .hover-upload-circle {
+            transform: scale(1.15);
+        }
+
+.hover-upload-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    color: white;
+    z-index: 5; /*小於 ActivityWidget 裡 z-index (10) */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 1rem;
+}
+
+.hover-upload-overlay-text {
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.375rem 1rem;
+    background-color: rgb(0 0 0 / 0.6);
+    border-radius: 99rem;
+}
+
+.hover-upload-circle {
+    height: 3.875rem;
+    width: 3.875rem;
+    background-color: rgb(255 255 255 / 0.2);
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 99rem;
+    margin-bottom: 0.75rem;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bi-upload {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    background-color: white;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='17 8 12 3 7 8'/%3E%3Cline x1='12' x2='12' y1='3' y2='15'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    transition: background-color 0.2s ease;
+}
+
+.data-card-preview-reminder {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: center;
+    color: #059669;
+    background-color: #ecfdf5;
+    margin-top: 0.75rem;
+    padding: 0.375rem 0;
+    border-radius: 0.5rem;
+}
+
+.btn-publish {
+    color: white;
+    background-color: #18181B;
+    font-size: 1rem;
+    font-weight: 900;
+}
+    .btn-publish:hover {
+        background-color:black;
+    }

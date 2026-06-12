@@ -1,0 +1,34 @@
+﻿@using TestPrototype.SharedUI.Services
+@inject LoginModalService LoginModal
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (LoginModal.IsVisible)
+{
+	<div class="modal-overlay">
+		<div class="modal-content">
+			<h3>需要登入</h3>
+			<button class="button-login" @onclick="JumpToLogin">登入</button>
+			<button class="button-cancel" @onclick="LoginModal.Hide">取消</button>
+		</div>
+	</div>
+}
+
+@code {
+
+	protected override void OnInitialized()
+	{
+		LoginModal.OnStateChanged += StateHasChanged;
+	}
+
+	private void JumpToLogin()
+	{
+		Navigation.NavigateTo("/login");
+		LoginModal.Hide();
+	}
+
+	public void Dispose()
+	{
+		LoginModal.OnStateChanged -= StateHasChanged;
+	}
+}

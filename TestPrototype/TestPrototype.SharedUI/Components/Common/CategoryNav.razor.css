@@ -1,0 +1,44 @@
+﻿.category-container {
+    padding: 0.75rem 1rem;
+    background-color: white;
+}
+
+.hide-scrollbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Firefox 專用 */
+    scrollbar-width: none;
+    /* IE/Edge 專用 */
+    -ms-overflow-style: none;
+    white-space: nowrap;
+    touch-action: pan-x;
+    flex-wrap: nowrap;
+}
+
+    /* Chrome, Safari, Edge (Chromium) 專用 */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+.btn {
+    padding: 0.5rem 1.25rem;
+    background-color: #F4F4F5;
+    border-radius: 99rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    color: #52525B;
+    transition: all 0.3s ease;
+
+    outline: none !important;
+    box-shadow: none !important;
+}
+    .btn:hover {
+        background-color: #E4E4E7;
+    }
+
+    .btn.active {
+        color: white;
+        background-color: #18181B;
+    }
+

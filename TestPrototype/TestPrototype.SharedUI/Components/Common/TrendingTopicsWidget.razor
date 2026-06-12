@@ -1,0 +1,40 @@
+﻿@using TestPrototype.SharedUI.Services
+@using TestPrototype.SharedUI.Models
+@inject IExploreService ExploreService
+
+<div class="trending-block bg-white shadow-sm mb-4">
+    <span class="trending-block-title d-flex align-items-center mb-3">
+        <i class="bi bi-fire me-2"></i>近期熱門版塊
+    </span>
+
+    @if (Topics == null)
+    {
+        <p class="text-muted">載入中...</p>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var topic in Topics)
+            {
+                <div class="topic-item">
+                    <div class="topic-item-rank-category">
+                        排名 @topic.Rank ‧ @topic.Category
+                    </div>
+                    <a href="/?tag=@Uri.EscapeDataString(topic.TopicName)" class="topic-item-title">@topic.TopicName</a>
+                    <div class="topic-item-discussion-count" style="font-size: 0.75rem;">
+                        @topic.DiscussionCount 篇討論
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+	private List<TrendingTopicDto>? Topics;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Topics = await ExploreService.GetTrendingTopicsAsync();
+	}
+}

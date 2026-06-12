@@ -1,0 +1,22 @@
+﻿@import 'variables';
+
+@import 'base/animations';
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+@import 'dark-mode';
+
+@import 'components';
+
+
+/*.hashtag-link {
+    color: $success;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s;
+
+    &:hover {*/ /* SASS 特有的巢狀寫法 */
+        /*color: darken($success, 10%);*/ /* 內建的顏色加深函數 */
+        /*text-decoration: underline;
+    }
+}*/

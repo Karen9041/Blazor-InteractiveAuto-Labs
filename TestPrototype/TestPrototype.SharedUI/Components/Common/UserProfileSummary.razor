@@ -1,0 +1,51 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+
+<div class="user-profile-widget d-flex align-items-center p-2 text-decoration-none mb-3">
+    <AuthorizeView>
+        @*登入*@
+        <Authorized>
+        <div class="avatar d-flex flex-shrink-0">
+            <UserAvatar ImageUrl="@context.User.FindFirst("avatar")?.Value" UserName="@context.User.Identity?.Name" />
+        </div>
+        <div class="user-info d-flex flex-column flex-grow-1 overflow-hidde ms-3">
+                <span class="user-name fw-bold text-truncate">@context.User.Identity?.Name</span>
+                <span class="user-handle text-truncate">@@@context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value</span>
+        </div>
+        <i class="bi bi-three-dots fs-5 flex-shrink-0" @onclick="HandleLogout"></i>
+        </Authorized>
+
+        @*未登入*@
+        <NotAuthorized>
+        <div class="avatar d-flex flex-shrink-0">
+            <UserAvatar />
+        </div>
+        <div class="d-flex flex-grow-1 ms-3">
+                <a href="/login" class="me-0">登入</a>
+        </div>
+        <i class="bi bi-three-dots fs-5 flex-shrink-0"></i>
+        </NotAuthorized>
+
+        @*空窗期*@
+        <Authorizing>
+            @* 這裡可以放一個隱形的 div，或是骨架屏 (Skeleton)，絕對不要放登入按鈕！ *@
+            <div class="avatar d-flex flex-shrink-0">
+                <UserAvatar />
+            </div>
+            <div class="d-flex flex-grow-1 ms-3">
+            </div>
+            <i class="bi bi-three-dots fs-5 flex-shrink-0"></i>
+        </Authorizing>
+    </AuthorizeView>
+</div>
+
+@code{
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        // 登出後把使用者踢回首頁
+        NavManager.NavigateTo("/");
+	}
+}

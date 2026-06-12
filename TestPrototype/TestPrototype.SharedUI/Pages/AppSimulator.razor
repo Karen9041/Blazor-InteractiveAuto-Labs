@@ -1,0 +1,28 @@
+﻿@page "/app-simulator"
+@inject NavigationManager NavigationManager
+
+<div style="background-color: #222; color: white; padding: 50px; text-align: center; height: 100vh;">
+    <h1>Jacfit App (模擬外部 App)</h1>
+    <p>您現在位於手機 App 內部。請點擊下方按鈕跳轉至 Web 社群：</p>
+
+    <div style="margin-top: 40px;">
+        @* 模擬 A 玩家從 App 跳轉 *@
+        <button @onclick='() => JumpToWeb("Ticket_A_LinKou")' style="padding: 15px 30px; background: #4CAF50; color: white; font-size: 18px; border-radius: 8px; margin: 10px;">
+            以 [LinKou] 身分跳轉 Web
+        </button>
+
+        @* 模擬 B 玩家從 App 跳轉 *@
+        <button @onclick='() => JumpToWeb("Ticket_B_Taipei")' style="padding: 15px 30px; background: #2196F3; color: white; font-size: 18px; border-radius: 8px; margin: 10px;">
+            以 [Taipei] 身分跳轉 Web
+        </button>
+    </div>
+</div>
+
+@code {
+    private void JumpToWeb(string ticket)
+    {
+        // 新版寫法：直接跳轉到首頁 ( / ) 並夾帶 ticket。
+        // AuthGatekeeper 會在首頁載入的瞬間，自動接手後續的所有登入與 Modal 攔截！
+        NavigationManager.NavigateTo($"/?ticket={ticket}");
+    }
+}

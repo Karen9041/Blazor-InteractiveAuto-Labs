@@ -1,0 +1,22 @@
+﻿<div class="search-block d-flex align-items-center px-3 py-2 bg-white">
+	<i class="bi bi-search me-2"></i>
+	<input type="text" 
+		class="search-input p-0 " 
+		placeholder="搜尋話題或車友..."
+		   @bind="SearchText"
+		   @bind:event="oninput"
+		   @onkeyup="HandleKeyUp" />
+</div>
+
+@code{
+	private string SearchText { get; set; } = "";
+
+	private void HandleKeyUp(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(SearchText))
+		{
+			// TODO: 在這裡呼叫 Search API 或是觸發 EventCallback 通知父元件
+			Console.WriteLine($"準備搜尋: {SearchText}");
+		}
+	}
+}

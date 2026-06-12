@@ -1,0 +1,95 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #F4F4F5;
+    height:100vh;
+}
+
+header {
+    background-color: white;
+    display: flex;
+}
+
+.notification {
+    color: black;
+}
+
+main {
+    padding-top: 49.5px;
+    padding-bottom: 76px;
+}
+
+.left-sidebar{
+    display: none;
+}
+
+.left-sidebar-item {
+    width: 100%;
+    max-width: 18rem;
+}
+
+.right-sidebar {
+    display: none;
+}
+
+/* 覆蓋層的底層設定 */
+.publish-overlay {
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    z-index: 1050; /* Bootstrap Modal 壓死 sticky-top */
+
+    transform: translateY(20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+    .publish-overlay.is-open {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+@media (min-width: 768px) {
+    .page {
+        flex-direction: row;
+    }
+
+    main {
+        max-width: 36rem;
+        padding: 0;
+    }
+
+    .left-sidebar {
+        display: flex;
+        width: 26vw;
+        height: 100%;
+        position: sticky;
+        top: 0;
+    }
+
+    .mobile-header{
+        display:none;
+    }
+
+    .mobile-bottom {
+        display: none;
+    }
+}
+
+@media(min-width: 1025px){
+    main {
+        max-width: 48rem;
+    }
+
+    .right-sidebar {
+        display: flex;
+        width: 26vw;
+        height: 100%;
+        position: sticky;
+        top: 0;
+    }
+}
