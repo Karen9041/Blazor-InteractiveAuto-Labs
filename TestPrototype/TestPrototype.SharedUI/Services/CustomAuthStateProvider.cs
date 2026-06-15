@@ -1,24 +1,28 @@
-﻿using System.Net.Http.Json;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
 using TestPrototype.SharedUI.Models;
 public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly PersistentComponentState _state;
     private readonly PersistingComponentStateSubscription _subscription;
+    private readonly ILogger<CustomAuthStateProvider> _logger;
 
     private UserDto? _currentUser;
     private bool _isHydrated = false;
 
-    public CustomAuthStateProvider(HttpClient httpClient, PersistentComponentState state)
+    public CustomAuthStateProvider(HttpClient httpClient, PersistentComponentState state, ILogger<CustomAuthStateProvider> logger)
     {
         _httpClient = httpClient;
         _state = state;
         // 註冊給 Server SSR 打包使用
         _subscription = state.RegisterOnPersisting(PersistAuthState, RenderMode.InteractiveAuto);
+        _logger = logger;
     }
 
     //核心查驗站：只看 Cookie，不問你怎麼進來的，拔掉 async
@@ -27,15 +31,21 @@ public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
         if (!_isHydrated)
         {
             _isHydrated = true;
-            Console.WriteLine("[AuthProvider] 正在嘗試打開保險箱...");
+
+            // 建立一個寬鬆的 JSON 選項
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
             if (_state.TryTakeFromJson<UserDto>("UserInfo", out var restoredUser))
             {
                 _currentUser = restoredUser;
-                Console.WriteLine($"[AuthProvider] 保險箱開啟成功！獲得使用者: {_currentUser?.Name}");
+                _logger.LogInformation("保險箱開啟成功，取得使用者：{UserName}", restoredUser.Name);
             }
             else
             {
-                Console.WriteLine("[AuthProvider] 保險箱是空的或讀取失敗！準備打 API...");
+                _logger.LogWarning("保險箱是空的或讀取失敗！準備打 API...");
             }
         }
 
@@ -58,18 +68,18 @@ public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
             if (response.IsSuccessStatusCode)
             {
                 _currentUser = await response.Content.ReadFromJsonAsync<UserDto>();
-                Console.WriteLine($"[AuthProvider] API 獲取成功: {_currentUser?.Name}");
+                _logger.LogInformation("API 獲取成功: {UserName}", _currentUser?.Name);
             }
             else
             {
                 _currentUser = null;
-                Console.WriteLine("[AuthProvider] API 回傳失敗或未登入");
+                _logger.LogWarning("API 回傳失敗或未登入");
             }
         }
         catch(Exception ex)
         {
             _currentUser = null;
-            Console.WriteLine($"[AuthProvider] API 發生例外錯誤: {ex.Message}");
+            _logger.LogError(ex, "API 驗證發生例外錯誤！");
         }
 
         return BuildAuthState(_currentUser);
@@ -101,7 +111,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
         {
             _state.PersistAsJson("UserInfo", _currentUser);
             // 這裡是在 Server 印出的，WASM 看不到
-            Console.WriteLine($"[Server AuthProvider] 已將 {_currentUser.Name} 裝入保險箱");
+            _logger.LogInformation("已將 {UserName} 裝入保險箱", _currentUser.Name);
         }
         return Task.CompletedTask;
     }

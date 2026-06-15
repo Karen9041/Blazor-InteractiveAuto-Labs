@@ -13,12 +13,12 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSharedUIServices();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddTransient<CookieHandler>();
+builder.Services.AddTransient<ServerCookieHandler>();
 builder.Services.AddHttpClient("BffClient", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7288"); // 改成你的伺服器網址
 })
-.AddHttpMessageHandler<CookieHandler>(); //關鍵：裝上攔截器
+.AddHttpMessageHandler<ServerCookieHandler>(); //關鍵：裝上攔截器
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BffClient"));
 
@@ -63,11 +63,14 @@ app.MapPost("/api/mock/silent-login", (SilentLoginRequestDto req, HttpContext co
         return Results.BadRequest(new { message = "缺少ticket" });
     }
 
+    context.Response.Cookies.Delete("AccessToken"); // 預防多胞胎
+
     var cookieOptions = new CookieOptions
     {
         HttpOnly = true, //禁止前端JS讀取
         Secure = true, //要求Https
         SameSite = SameSiteMode.Lax,
+        Path = "/",
         Expires = DateTime.UtcNow.AddDays(7)
     };
 
@@ -83,11 +86,16 @@ app.MapPost("/api/mock/login", (LoginRequestDto req, HttpContext context) =>
     // Demo 階段：只要有輸入帳號就當作成功，並把帳號名稱存進 Cookie 模擬真實 Token
     if (!string.IsNullOrWhiteSpace(req.Username))
     {
+        context.Response.Cookies.Delete("AccessToken");
+        context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/" });
+        context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/api/mock" });
         context.Response.Cookies.Append("AccessToken", $"Token_For_{req.Username}", new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Lax
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(7)
         });
         return Results.Ok(new { Message = "登入成功" });
     }
@@ -98,8 +106,9 @@ app.MapPost("/api/mock/logout", (HttpContext context) =>
 {
     if(context.Request.Cookies.ContainsKey("AccessToken"))
     {
-        //刪除cookie
         context.Response.Cookies.Delete("AccessToken");
+        context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/" });
+        context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/api/mock" });
         return Results.Ok(new { Message = "Mock Cookie 已成功刪除" });
     }
     else
