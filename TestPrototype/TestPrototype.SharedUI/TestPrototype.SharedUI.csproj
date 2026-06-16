@@ -1,32 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Styles\app.scss" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Styles\app.scss" />
+	</ItemGroup>
 
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.25" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.25" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.27" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\css\" />
-  </ItemGroup>
-
-  <Target Name="CompileSCSS" BeforeTargets="Build">
-	<Exec Command="npm run build:css" />
-  </Target>
+	<ItemGroup>
+		<PackageReference Include="AspNetCore.SassCompiler" Version="1.101.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.25" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.25" />
+		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.27" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="wwwroot\css\" />
+	</ItemGroup>
 
 </Project>
