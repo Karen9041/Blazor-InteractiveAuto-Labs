@@ -20,7 +20,7 @@
         <div class="left-sidebar-item">
             <NavMenu />
         </div>
-		<div class="left-sidebar-item px-3">
+        <div class="left-sidebar-item px-3">
             <PublishButton />
         </div>
 		<div class="left-sidebar-item mt-auto px-3">
@@ -31,7 +31,7 @@
     @*手機版：頂部 Header*@
     <header class="mobile-header justify-content-between align-items-center fixed-top border-bottom px-3 py-1">
         <Logo />
-        <a href="/notification" class="notification"><NotificationBell /></a>
+        <a class="notification cursor-pointer" @onclick="OpenNotifications"><NotificationBell /></a>
     </header>
 
     <main class="position-relative w-100 h-100 bg-white d-flex flex-column">
@@ -87,6 +87,15 @@
             PublishState.Close();
         }
     }
+
+    private async Task OpenNotifications()
+    {
+        if(!await AuthService.RequireLoginAsync())
+        {
+            return;
+        }
+        NavManager.NavigateTo("/notifications");
+	}
 
     public void Dispose()
     {

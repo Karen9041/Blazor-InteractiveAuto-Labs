@@ -9,5 +9,6 @@ namespace TestPrototype.SharedUI.Services
         Task<bool> SilentLoginAsync(SilentLoginRequestDto request);
         Task LogoutAsync();
         Task<bool> SwitchAccountAsync(SilentLoginRequestDto request);
+        Task<bool> RequireLoginAsync();
     }
 }

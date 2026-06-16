@@ -1,5 +1,6 @@
 ﻿@using TestPrototype.SharedUI.Services
 @inject PublishStateService PublishState
+@inject IAuthService AuthService
 
 @if(isIconOnly)
 {
@@ -22,8 +23,12 @@ else
 @code{
 	[Parameter] public bool isIconOnly { get; set; } = false;
 
-	private void Open()
+	private async Task Open()
 	{
+		if(!await AuthService.RequireLoginAsync())
+		{
+			return;
+		}		
 		PublishState.Open();
 	}
 }

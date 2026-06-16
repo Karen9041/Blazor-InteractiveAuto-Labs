@@ -5,7 +5,7 @@
 @using System.Text.RegularExpressions
 
 @inject CategoryStateService CategoryState
-@inject LoginModalService LoginModal
+@inject IAuthService AuthService
 
 <div class="post-card-container">
     <article class="post-card bg-white w-100 border-bottom">
@@ -76,19 +76,13 @@
 
 @code {
     [Parameter] public PostDto PostData { get; set; } = new();
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthStateTask { get; set; }
     private bool isLiked = false;
 
     private async Task ToggleLike() {
-        var authState = await AuthStateTask;
-		var user = authState.User;
-        if (user.Identity == null || !user.Identity.IsAuthenticated)
+        if (!await AuthService.RequireLoginAsync())
         {
-			LoginModal.Show();
             return;
 		}
-
         isLiked = !isLiked;
     }
 

@@ -1,4 +1,7 @@
 ﻿@using TestPrototype.SharedUI.Components.Common
+@using TestPrototype.SharedUI.Services
+@inject NavigationManager NavManager
+@inject IAuthService AuthService
 
 <div class="nav-scrollable" onclick="document.querySelector('.nav-item').click()">
     <nav class="flex-column">
@@ -13,10 +16,20 @@
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link" href="/notification">
+            <NavLink class="nav-link cursor-pointer" @onclick="OpenNotifications">
                 <span class="notification"><NotificationBell /></span>通知
             </NavLink>
         </div>
     </nav>
 </div>
 
+@code{
+    private async Task OpenNotifications()
+    {
+        if (!await AuthService.RequireLoginAsync())
+        {
+            return;
+        }
+        NavManager.NavigateTo("/notifications");
+	}
+}

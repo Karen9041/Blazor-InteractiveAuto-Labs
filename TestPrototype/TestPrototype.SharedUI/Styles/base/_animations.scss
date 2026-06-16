@@ -1,0 +1,12 @@
+﻿/* 定義由下往上滑入並淡入的動畫 */
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -48,8 +48,8 @@ public class MockFeedService: IFeedService
         await Task.Delay(500);
 
         newPost.Id = _mockDatabase.Max(p => p.Id) + 1;
-        newPost.AuthorName = "村民";
-        newPost.AuthorAvatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzrXltTJxVsrw5CXP5FtJsln0gt6sQMrUR3Q&s";
+        //newPost.AuthorName = "村民";
+        //newPost.AuthorAvatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzrXltTJxVsrw5CXP5FtJsln0gt6sQMrUR3Q&s";
         _mockDatabase.Insert(0, newPost);
 
         OnFeedUpdated.Invoke();

@@ -1,13 +1,9 @@
 ﻿@import 'variables';
-
 @import 'base/animations';
-
+@import 'base//_utilities.scss';
 @import "../node_modules/bootstrap/scss/bootstrap";
-
 @import 'dark-mode';
-
 @import 'components';
-
 
 /*.hashtag-link {
     color: $success;

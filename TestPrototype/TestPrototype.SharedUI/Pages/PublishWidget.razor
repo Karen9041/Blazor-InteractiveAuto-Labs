@@ -2,10 +2,12 @@
 @using TestPrototype.SharedUI.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
+@using System.Security.Claims
 
 @inject NavigationManager NavManager
 @inject ICategoryService CategoryService
 @inject IFeedService FeedService
+@inject IAuthService AuthService
 @inject PublishStateService PublishState
 @inject IJSRuntime JS
 @implements IAsyncDisposable
@@ -20,81 +22,81 @@
         </div>
     </div>
 
-    @if (DetectedActivity != null)
-    {
-        <div class="publish-container-reminder d-flex flex-row w-100">
-            <div class="publish-container-reminder-icon">
-                <i class="bi bi-check"></i>
-            </div>
-			<div class="d-flex flex-column">
-                <span class="publish-container-reminder-textbold">已偵測到最新運動紀錄</span>
-                <span class="publish-container-reminder-text">系統已為您備妥專屬的實境數據卡。撰寫心得並發布吧！</span>
-            </div>
-        </div>
-    }
-
-    @* 中間可滾動內容區 *@
-    <div class="publish-body d-flex flex-column flex-grow-1 overflow-auto p-4 hide-scrollbar">
-        
-        @* 使用者資訊與分類選擇 (Select) *@
-        <select class="form-select body-border category-select p-3 w-100" @bind="DraftPost.Category">
-            @if (Categories != null)
-            {
-                @foreach (var cat in Categories)
-                {
-                    <option value="@cat.Name">@cat.Emoji @cat.Name</option>
-                }
-            }
-        </select>
-
-        @* 文字輸入區 *@
-        <textarea class="form-text body-border p-3"
-                  rows="4" 
-                  placeholder="分享一下剛剛的訓練心得，或是有什麼問題想問大家？"
-                  @bind="DraftPost.Content"></textarea>
-
-        @* 實境數據卡預覽區 *@
-        <div class="p-3 body-border bg-white">
-            <div class="d-flex justify-content-between w-100">
-                <span class="activity-area-text d-flex align-items-center gap-2">
-                    <i class="bi bi-clock"></i> 附加實境數據卡</span>
-                <div class="activity-area-toggle form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="toggleDataCard" 
-                            @bind="isDataCardEnabled" @bind:after="OnToggleChanged">
-                </div>
-            </div>
             @if (DetectedActivity != null)
             {
-                <div class="data-card-preview-wrapper @(isDataCardEnabled ? "is-expanded" : "") d-flex flex-column justify-content-center align-items-center">
-            
-                    @* 隱藏的 InputFile 元件*@
-                    <InputFile id="imageUploader" OnChange="LoadFile" accept="image/*" class="d-none" />
-
-                    <div class="background-upload-area position-relative @(string.IsNullOrEmpty(currentBgImageUrl) ? "empty-placeholder" : "")">
-
-                            <ActivityWidget ImageUrl="@currentBgImageUrl" ActivityData="DetectedActivity" IsPreviewMode="true" />
-
-                        @* Hover 時顯示的覆蓋層*@
-                            <div class="hover-upload-overlay d-flex flex-column align-items-center justify-content-center"
-                                    @onclick="TriggerUpload">
-                                <div class="hover-upload-circle p-3">
-                                    <i class="bi bi-upload"></i>
-                                </div>
-                                <span class="hover-upload-overlay-text">上傳專屬照片作為背景</span>
-                            </div>
+                <div class="publish-container-reminder d-flex flex-row w-100">
+                    <div class="publish-container-reminder-icon">
+                        <i class="bi bi-check"></i>
                     </div>
-
-                    <span class="data-card-preview-reminder w-100">✨ 點擊圖片，換上你今天拍的帥照吧！</span>
+			        <div class="d-flex flex-column">
+                        <span class="publish-container-reminder-textbold">已偵測到最新運動紀錄</span>
+                        <span class="publish-container-reminder-text">系統已為您備妥專屬的實境數據卡。撰寫心得並發布吧！</span>
+                    </div>
                 </div>
             }
-        </div>
+
+            @* 中間可滾動內容區 *@
+            <div class="publish-body d-flex flex-column flex-grow-1 overflow-auto p-4 hide-scrollbar">
+        
+                @* 使用者資訊與分類選擇 (Select) *@
+                <select class="form-select body-border category-select p-3 w-100" @bind="DraftPost.Category">
+                    @if (Categories != null)
+                    {
+                        @foreach (var cat in Categories)
+                        {
+                            <option value="@cat.Name">@cat.Emoji @cat.Name</option>
+                        }
+                    }
+                </select>
+
+                @* 文字輸入區 *@
+                <textarea class="form-text body-border p-3"
+                          rows="4" 
+                          placeholder="分享一下剛剛的訓練心得，或是有什麼問題想問大家？"
+                          @bind="DraftPost.Content"></textarea>
+
+                @* 實境數據卡預覽區 *@
+                <div class="p-3 body-border bg-white">
+                    <div class="d-flex justify-content-between w-100">
+                        <span class="activity-area-text d-flex align-items-center gap-2">
+                            <i class="bi bi-clock"></i> 附加實境數據卡</span>
+                        <div class="activity-area-toggle form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleDataCard" 
+                                    @bind="isDataCardEnabled" @bind:after="OnToggleChanged">
+                        </div>
+                    </div>
+                    @if (DetectedActivity != null)
+                    {
+                        <div class="data-card-preview-wrapper @(isDataCardEnabled ? "is-expanded" : "") d-flex flex-column justify-content-center align-items-center">
+            
+                            @* 隱藏的 InputFile 元件*@
+                            <InputFile id="imageUploader" OnChange="LoadFile" accept="image/*" class="d-none" />
+
+                            <div class="background-upload-area position-relative @(string.IsNullOrEmpty(currentBgImageUrl) ? "empty-placeholder" : "")">
+
+                                    <ActivityWidget ImageUrl="@currentBgImageUrl" ActivityData="DetectedActivity" IsPreviewMode="true" />
+
+                                @* Hover 時顯示的覆蓋層*@
+                                    <div class="hover-upload-overlay d-flex flex-column align-items-center justify-content-center"
+                                            @onclick="TriggerUpload">
+                                        <div class="hover-upload-circle p-3">
+                                            <i class="bi bi-upload"></i>
+                                        </div>
+                                        <span class="hover-upload-overlay-text">上傳專屬照片作為背景</span>
+                                    </div>
+                            </div>
+
+                            <span class="data-card-preview-reminder w-100">✨ 點擊圖片，換上你今天拍的帥照吧！</span>
+                        </div>
+                    }
+                </div>
 
 
-        @* 底部工具列與發布按鈕 *@
-        <button class="btn-publish w-100 body-border py-3" @onclick="Publish">
-            確認發布
-        </button>
-    </div>
+                @* 底部工具列與發布按鈕 *@
+                <button class="btn-publish w-100 body-border py-3" @onclick="Publish">
+                    確認發布
+                </button>
+            </div>
 </div>
 
 @code{
@@ -102,13 +104,12 @@
     private PostDto DraftPost { get; set; } = new PostDto {};
     // 模擬偵測到的數據 (DTO)
     private ActivityRecordDto? DetectedActivity;
-
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
     // 控制 Toggle 狀態
     private bool isDataCardEnabled = false;
-
     // 當前上傳圖片的預覽網址 (Base64 或 Blob URL)
     private string? currentBgImageUrl;
-
     private IJSObjectReference? module;
 
     protected override void OnInitialized()
@@ -195,9 +196,22 @@
 
     private async Task Publish()
     {
-        await FeedService.PublishPostAsync(DraftPost);
-		await ResetForm();
-		PublishState.Close();
+        try
+        {
+            var authState = await AuthStateTask;
+            var user = authState.User;
+
+            DraftPost.AuthorName = user.Identity.Name!;
+            DraftPost.AuthorAvatarUrl = user.FindFirst("avatar")?.Value ?? "";
+
+            await FeedService.PublishPostAsync(DraftPost);
+            await ResetForm();
+            PublishState.Close();
+        }
+        catch
+        {
+            
+        }
     }
 
     private async Task ResetForm()
