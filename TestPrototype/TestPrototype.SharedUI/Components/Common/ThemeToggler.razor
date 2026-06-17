@@ -1,0 +1,36 @@
+﻿@inject IPreferenceService PreferenceService
+@inject IJSRuntime JS
+
+<button class="btn btn-outline-secondary" @onclick="ToggleThemeAsync">
+    @if (isDarkMode)
+    {
+        <span>亮色模式</span>
+    }
+    else
+    {
+        <span>深色模式</span>
+    }
+</button>
+
+@code {
+    private bool isDarkMode = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var theme = await PreferenceService.GetValueAsync("theme");
+        isDarkMode = (theme == "dark");
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        isDarkMode = !isDarkMode;
+        var newTheme = isDarkMode ? "dark" : "light";
+
+        // 1. 儲存到 Cookie (供下次 F5 時 SSR 讀取)
+        await PreferenceService.SetValueAsync("theme", newTheme);
+
+        // 2. 即時改變畫面的 HTML 標籤屬性 (不需要重新整理頁面)
+        // 這裡直接寫一行簡單的 JS 注入，修改 <html data-theme="...">
+        await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", newTheme);
+    }
+}

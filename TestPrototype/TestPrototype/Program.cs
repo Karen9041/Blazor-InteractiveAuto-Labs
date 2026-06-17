@@ -21,7 +21,7 @@ builder.Services.AddHttpClient("BffClient", client =>
 .AddHttpMessageHandler<ServerCookieHandler>(); //關鍵：裝上攔截器
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BffClient"));
-
+builder.Services.AddScoped<IPreferenceService, ServerPreferenceService>();
 // 防止未來部署至負載平衡器時遺失 Secure 標籤
 builder.Services.AddAntiforgery(options =>
 {
