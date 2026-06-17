@@ -1,36 +1,52 @@
 ﻿@inject IPreferenceService PreferenceService
 @inject IJSRuntime JS
 
-<button class="btn btn-outline-secondary" @onclick="ToggleThemeAsync">
-    @if (isDarkMode)
+<button class="btn btn-outline-secondary" @onclick="CycleThemeAsync">
+    @if (currentTheme == "light")
     {
         <span>亮色模式</span>
     }
-    else
+    else if (currentTheme == "dark")
     {
         <span>深色模式</span>
+    }
+    else
+    {
+        <span>跟隨系統</span>
     }
 </button>
 
 @code {
-    private bool isDarkMode = false;
+    private string currentTheme = "system";
 
     protected override async Task OnInitializedAsync()
     {
-        var theme = await PreferenceService.GetValueAsync("theme");
-        isDarkMode = (theme == "dark");
+        var cookieVal = await PreferenceService.GetValueAsync("theme");
+        currentTheme = string.IsNullOrEmpty(cookieVal) ? "system" : cookieVal;
     }
 
-    private async Task ToggleThemeAsync()
+    private async Task CycleThemeAsync()
     {
-        isDarkMode = !isDarkMode;
-        var newTheme = isDarkMode ? "dark" : "light";
+        currentTheme = currentTheme switch
+        {
+            "system" => "light",
+            "light" => "dark",
+            "dark" => "system",
+            _ => "system"
+        };
 
-        // 1. 儲存到 Cookie (供下次 F5 時 SSR 讀取)
-        await PreferenceService.SetValueAsync("theme", newTheme);
+        if(currentTheme == "system")
+        {
+            // 如果選回跟隨系統，我們把 Cookie 設為空值 (或者你可以呼叫 Delete 方法)
+            await PreferenceService.SetValueAsync("theme", "system");
+        }
+        else
+        {
+            // 儲存到 Cookie (供下次 F5 時 SSR 讀取)
+            await PreferenceService.SetValueAsync("theme", currentTheme);
+        }
 
-        // 2. 即時改變畫面的 HTML 標籤屬性 (不需要重新整理頁面)
-        // 這裡直接寫一行簡單的 JS 注入，修改 <html data-theme="...">
-        await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", newTheme);
+        // 即時改變畫面的 HTML 標籤屬性 (不需要重新整理頁面)
+        await JS.InvokeVoidAsync("themeHelper.applyTheme", currentTheme);
     }
 }

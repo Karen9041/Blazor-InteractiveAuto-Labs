@@ -5,10 +5,11 @@
     // SSR 階段：向 ServerPreferenceService 詢問 Cookie 裡的 theme 設定
     // 因為這是在 @code 外面，且是同步渲染階段，我們直接呼叫 Result 取值 (這裡的情境允許這麼做)
     var themeCookie = PreferenceService.GetValueAsync("theme").Result;
-    var dataTheme = themeCookie == "dark" ? "dark" : "light";
+    // 如果 Cookie 有明確指定 light/dark，SSR 就直接印出來
+    var explicitTheme = (themeCookie == "dark" || themeCookie == "light") ? themeCookie : null;
 }
 <!DOCTYPE html>
-<html lang="en" data-theme="@dataTheme">
+<html lang="en" data-theme="@explicitTheme">
 
 <head>
     <meta charset="utf-8" />
@@ -20,12 +21,18 @@
     <link rel="stylesheet" href="_content/TestPrototype.SharedUI/css/app.min.css" />
 
     <HeadOutlet @rendermode="InteractiveAuto" />
+    <script src="_content/TestPrototype.SharedUI/js/cookieHelper.js"></script>
+    <script src="_content/TestPrototype.SharedUI/js/themeHelper.js"></script>
+    <script>
+        if (!document.documentElement.getAttribute('data-theme')) {
+            window.themeHelper.applyTheme('system');
+        }
+    </script>
 </head>
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
     <script src="_framework/blazor.web.js"></script>
-	<script src="_content/TestPrototype.SharedUI/js/cookieHelper.js"></script>
 </body>
 
 </html>

@@ -1,54 +1,4 @@
 @charset "UTF-8";
-:root {
-  --bg-color: #ffffff;
-  --text-color: #333333;
-  --card-bg: #f8f9fa;
-}
-
-/* 定義由下往上滑入並淡入的動畫 */
-@keyframes slideUpFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* 將動畫綁定到這個 class 上 */
-.animate-slide-up {
-  animation: slideUpFadeIn 0.7s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-}
-
-.hide-scrollbar {
-  overflow-x: auto;
-  /* Firefox 專用 */
-  scrollbar-width: none;
-  /* IE/Edge 專用 */
-  -ms-overflow-style: none;
-}
-
-/* Chrome, Safari, Edge (Chromium) 專用 */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.post-content-text-hashtag {
-  font-weight: 700;
-  color: #a1a1aa;
-  cursor: pointer;
-}
-
-.post-content-text-hashtag:hover {
-  color: #52525B;
-  text-decoration: underline;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
 /*!
  * Bootstrap  v5.3.8 (https://getbootstrap.com/)
  * Copyright 2011-2025 The Bootstrap Authors
@@ -11909,33 +11859,5 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
-[data-theme=dark] {
-  --bg-color: #121212;
-  --text-color: #e0e0e0;
-  --card-bg: #1e1e1e;
-}
 
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s ease;
-}
-
-.card {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-}
-
-/*.hashtag-link {
-    color: $success;
-    text-decoration: none;
-    font-weight: 700;
-    transition: color 0.2s;
-
-    &:hover {*/ /* SASS 特有的巢狀寫法 */
-/*color: darken($success, 10%);*/ /* 內建的顏色加深函數 */
-/*text-decoration: underline;
-    }
-}*/
-
-/*# sourceMappingURL=app.min.css.map */
+/*# sourceMappingURL=bootstrap.css.map */
