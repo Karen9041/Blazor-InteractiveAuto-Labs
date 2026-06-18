@@ -28,6 +28,24 @@ namespace TestPrototype.SharedUI.Services
             }
             return false;
         }
+        public async Task<bool> LoginGoogleAsync(string callBackCode)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/Auth/googleSignIn", callBackCode);
+            if (response.IsSuccessStatusCode)
+            {
+                ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
+            }
+            return response.IsSuccessStatusCode;
+        }
+        public async Task<bool> LoginAppleAsync(string callBackCode)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/mock/login", callBackCode);
+            if (response.IsSuccessStatusCode)
+            {
+                ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
+            }
+            return response.IsSuccessStatusCode;
+        }
 
         public async Task<bool> SilentLoginAsync(SilentLoginRequestDto request)
         {

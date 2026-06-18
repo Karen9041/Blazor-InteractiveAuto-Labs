@@ -2,6 +2,8 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @using TestPrototype.SharedUI.Models
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
 
 <div class="login-container d-flex flex-column gap-1">
 	<h2>歡迎</h2>
@@ -12,7 +14,9 @@
 	<div>
 		<input @bind="password" type="password" placeholder="密碼(隨便打)" />
 	</div>
-	<button @onclick="HandleGoogleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "立即登入")</button>
+	<button @onclick="HandleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "立即登入")</button>
+	<button @onclick="HandleGoogleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "Google")</button>
+	<button @onclick="HandleGoogleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "Google")</button>
 	@if(!string.IsNullOrEmpty(errorMessage))
 	{
 		<p class="error-message text-danger">@errorMessage</p>
@@ -50,8 +54,10 @@
 		isLoading = true;
 		errorMessage = "";
 
+		// var clientId = @Configuration["Authentication:Google:ClientId"];
+		// var redirectUri = @Configuration["Authentication:Google:RedirectUri"];
 		var clientId = "721934805089-v033jop88cti47e0vsrl0jdu3je7g5nl.apps.googleusercontent.com";
-		var redirectUri = Uri.EscapeDataString("https://localhost:7288/google-callback");
+		var redirectUri = "https://localhost:7288/google-callback";
 		var scope = Uri.EscapeDataString("openid profile email");
 		var state = Guid.NewGuid().ToString("N"); 
 		var googleAuthUrl = $"https://accounts.google.com/o/oauth2/v2/auth" +

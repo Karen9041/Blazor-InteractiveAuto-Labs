@@ -1,6 +1,6 @@
 ﻿@page "/google-callback"
 @inject NavigationManager Navigation
-@inject HttpClient Http
+@inject IAuthService AuthService
 @using System.Net.Http.Json
 
 <p>正在與伺服器進行安全驗證，請稍候...</p>
@@ -21,33 +21,24 @@
             Navigation.NavigateTo("/login?error=missing_code");
             return;
         }
-
+        var isSuccess = false;
         try
         {
             // 這裡就是關鍵！Blazor 功成身退，把 code 送給 Web API 大腦處理
-            var response = await Http.PostAsJsonAsync("https://your-api-server.com/api/auth/google-web", new { Code = code });
-
-            if (response.IsSuccessStatusCode)
-            {
-                // 成功了！Web API 會回傳「你自己系統發行的 JWT Token」
-                var result = await response.Content.ReadFromJsonAsync<LoginResult>();
-
-                // 把這張 JWT 存到 Browser 的 LocalStorage 或是 Cookie 中
-                // await TokenService.SaveToken(result.Token);
-
-                // 登入成功，導向首頁或遊戲大廳
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                Navigation.NavigateTo("/login?error=api_auth_failed");
-            }
+            isSuccess = await AuthService.LoginGoogleAsync(code);
         }
         catch (Exception)
         {
             Navigation.NavigateTo("/login?error=network_error");
         }
-    }
+        if (isSuccess)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Navigation.NavigateTo("/login?error=api_auth_failed");
+        }
 
-    public class LoginResult { public string Token { get; set; } }
+    }
 }
