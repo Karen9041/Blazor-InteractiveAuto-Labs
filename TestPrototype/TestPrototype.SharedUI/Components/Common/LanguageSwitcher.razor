@@ -1,0 +1,35 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject NavigationManager NavManager
+
+<select class="form-select w-auto" value="@currentCulture" @onchange="ChangeLanguageAsync">
+    <option value="en-US">English</option>
+    <option value="zh-TW">繁體中文</option>
+</select>
+
+@code {
+    private string currentCulture = "zh-TW";
+
+    protected override void OnInitialized()
+    {
+        // 抓取目前的語系
+        currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+    }
+
+    private async Task ChangeLanguageAsync(ChangeEventArgs e)
+    {
+        var selectedCulture = e.Value?.ToString() ?? "zh-TW";
+
+        // 1. 組合微軟規定的 Cookie 格式
+        var CookieValue = $"c={selectedCulture}|uic={selectedCulture}";
+
+        // 2. 透過我們上一階段寫的 cookieHelper 寫入
+        if (OperatingSystem.IsBrowser())
+        {
+            await JS.InvokeVoidAsync("cookieHelper.set", ".AspNetCore.Culture", CookieValue, 365);
+
+            // 3. 強制重新整理頁面！這非常重要，這能讓 SSR 用新語言重新渲染
+            NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+        }
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using TestPrototype.SharedUI.Services;
 
 namespace TestPrototype.SharedUI
@@ -8,6 +9,9 @@ namespace TestPrototype.SharedUI
     {
         public static IServiceCollection AddSharedUIServices(this IServiceCollection services)
         {
+            services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+            services.AddLocalization();
+
             services.AddScoped<IExploreService, MockExploreService>();
             services.AddScoped<IFeedService, MockFeedService>();
             services.AddScoped<ICategoryService, MockCategoryService>();
@@ -15,7 +19,6 @@ namespace TestPrototype.SharedUI
             services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
             services.AddScoped<LoginModalService>();
             services.AddScoped<ConflictModalService>();
-
             services.AddScoped<PublishStateService>();
             services.AddScoped<CategoryStateService>();
             services.AddScoped<NotificationStateService>();

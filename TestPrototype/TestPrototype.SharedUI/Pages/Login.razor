@@ -17,6 +17,7 @@
 	<button @onclick="HandleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "立即登入")</button>
 	<button @onclick="HandleGoogleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "Google")</button>
 	<button @onclick="HandleGoogleLogin" disabled="@isLoading" class="">@(isLoading ? "登入中..." : "Google")</button>
+
 	@if(!string.IsNullOrEmpty(errorMessage))
 	{
 		<p class="error-message text-danger">@errorMessage</p>

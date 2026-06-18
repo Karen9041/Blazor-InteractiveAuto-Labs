@@ -30,6 +30,18 @@ builder.Services.AddAntiforgery(options =>
 
 var app = builder.Build();
 
+// 設定支援的語系 (一定要放在 app.UseRouting() 之前)
+var supportedCultures = new[] { "en-US", "zh-TW" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[1]) // 預設中文
+    .AddSupportedCultures(supportedCultures) // 註冊日期貨幣格式
+    .AddSupportedUICultures(supportedCultures); // 註冊 UI 文字
+
+// 開啟並套用當下語言到 Header (方便某些 API 讀取)
+localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
+
+app.UseRequestLocalization(localizationOptions);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

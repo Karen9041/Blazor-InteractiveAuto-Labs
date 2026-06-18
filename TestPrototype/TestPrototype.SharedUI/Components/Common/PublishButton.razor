@@ -1,6 +1,9 @@
 ﻿@using TestPrototype.SharedUI.Services
+@using Microsoft.Extensions.Localization
+
 @inject PublishStateService PublishState
 @inject IAuthService AuthService
+@inject IStringLocalizer<SharedResources> Loc
 
 @if(isIconOnly)
 {
@@ -15,7 +18,7 @@ else
 {
 	<div class="btn-full align-items-end w-100">
 		<button @onclick="Open">
-			<span class="bi bi-big bi-plus p-2 me-2 bg-white"></span>發布紀錄
+			<span class="bi bi-big bi-plus p-2 me-2 bg-white"></span>@Loc["PublishPost"]
 		</button>
 	</div>
 }

@@ -20,9 +20,13 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.25" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.25" />
 		<PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.27" />
+		<PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.28" />
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="wwwroot\css\" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="i18n\*.json" />
 	</ItemGroup>
 
 </Project>
