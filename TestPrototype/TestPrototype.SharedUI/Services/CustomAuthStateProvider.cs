@@ -92,7 +92,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider, IDisposable
             var identity = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.Name ?? string.Empty) ,
+                new Claim(ClaimTypes.Name, user.Name ?? string.Empty),
                 new Claim("avatar", user.AvatarUrl ?? string.Empty)
             }, "BffAuth");
             return new AuthenticationState(new ClaimsPrincipal(identity));

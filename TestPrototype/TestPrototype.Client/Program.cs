@@ -11,7 +11,7 @@ builder.Services.AddHttpClient("API", client =>
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<WasmCookieHandler>();
 
-//§â¥[¤u¹Lªº HttpClient ³]¬°¥ş°ì¹w³]­È
+//æŠŠåŠ å·¥éçš„ HttpClient è¨­ç‚ºå…¨åŸŸé è¨­å€¼
 builder.Services.AddScoped(sp => 
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 builder.Services.AddScoped<IPreferenceService, ClientPreferenceService>();
@@ -20,27 +20,27 @@ builder.Services.AddAuthorizationCore();
 
 var host = builder.Build();
 
-//Åı WASM ±Ò°Ê®É¥ı¥hÅª¨ú Cookie ªº»y¨t
+//è®“ WASM å•Ÿå‹•æ™‚å…ˆå»è®€å– Cookie çš„èªç³»
 var js = host.Services.GetRequiredService<IJSRuntime>();
-// §Q¥Î§Ú­Ì¥ı«e¼gªº js helper ¥h®³»y¨¥ Cookie
+// åˆ©ç”¨æˆ‘å€‘å…ˆå‰å¯«çš„ js helper å»æ‹¿èªè¨€ Cookie
 var cultureCookie = await js.InvokeAsync<string>("cookieHelper.get", ".AspNetCore.Culture");
 
-string cultureName = "zh-TW"; // ¹w³]»y¨¥
+string cultureName = "zh-TW"; // é è¨­èªè¨€
 
-// ¸ÑªR·L³n Cookie ®æ¦¡ (c=en-US|uic=en-US)
+// è§£æå¾®è»Ÿ Cookie æ ¼å¼ (c=en-US|uic=en-US)
 if (!string.IsNullOrWhiteSpace(cultureCookie) && cultureCookie.Contains("uic="))
 {
     var parts = cultureCookie.Split('|');
     var uicPart = parts.FirstOrDefault(p => p.StartsWith("uic="));
     if (uicPart != null)
     {
-        cultureName = uicPart.Substring(4); // ¨ú±o "en-US"
+        cultureName = uicPart.Substring(4); // å–å¾— "en-US"
     }
 }
 
-// ±j¨î±N WASM °õ¦æºü³]©w¬° Cookie ¬ö¿ıªº»y¨¥
+// å¼·åˆ¶å°‡ WASM åŸ·è¡Œç·’è¨­å®šç‚º Cookie ç´€éŒ„çš„èªè¨€
 var culture = new CultureInfo(cultureName);
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-await builder.Build().RunAsync();
+await host.RunAsync();

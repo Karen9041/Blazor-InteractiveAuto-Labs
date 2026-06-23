@@ -1,5 +1,6 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http.Json;
 using TestPrototype.SharedUI.Models;
 
 namespace TestPrototype.SharedUI.Services
@@ -10,12 +11,21 @@ namespace TestPrototype.SharedUI.Services
         private readonly HttpClient _httpClient;
         private readonly AuthenticationStateProvider _authStateProvider;
         private readonly LoginModalService _loginModal;
+        private readonly IPreferenceService _preferenceService;
+        private readonly NavigationManager _navigationManager;
 
-        public AuthService(HttpClient httpClient, AuthenticationStateProvider authStateProvider, LoginModalService loginModal)
+        public AuthService(
+            HttpClient httpClient, 
+            AuthenticationStateProvider authStateProvider, 
+            LoginModalService loginModal,
+            IPreferenceService preferenceService,
+            NavigationManager navigationManager)
         {
             _httpClient = httpClient;
             _authStateProvider = authStateProvider;
             _loginModal = loginModal;
+            _preferenceService = preferenceService;
+            _navigationManager = navigationManager;
         }
 
         public async Task<bool> LoginAsync(LoginRequestDto request)
@@ -23,7 +33,28 @@ namespace TestPrototype.SharedUI.Services
             var response = await _httpClient.PostAsJsonAsync("api/mock/login", request);
             if (response.IsSuccessStatusCode)
             {
+                var requiresReload = false;
+                //從mock api獲得使用者偏好(theme, language, etc.)，並儲存到本地端
+                var meReq = await _httpClient.GetAsync("/api/mock/me");
+                if(meReq.IsSuccessStatusCode)
+                {
+                    var userPreference = await meReq.Content.ReadFromJsonAsync<UserDto>();
+                    if (userPreference != null)
+                    {
+                        requiresReload |= await SyncPreferenceAsync("theme", userPreference.PreferredTheme);
+                        requiresReload |= await SyncPreferenceAsync(
+                            ".AspNetCore.Culture", 
+                            userPreference.PreferredLanguage, 
+                            $"c={userPreference.PreferredLanguage}|uic={userPreference.PreferredLanguage}"
+                            );
+                    }
+                }
+
                 ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
+                if (requiresReload)
+                {
+                    _navigationManager.NavigateTo("/", forceLoad: true);
+                }
                 return true;
             }
             return false;
@@ -61,6 +92,9 @@ namespace TestPrototype.SharedUI.Services
         public async Task LogoutAsync()
         {
             await _httpClient.PostAsync("api/mock/logout", null);
+            await _preferenceService.SetValueAsync("theme", "", -1); // 設為過期來刪除
+            await _preferenceService.SetValueAsync(".AspNetCore.Culture", "", -1);
+            _navigationManager.NavigateTo("/", forceLoad: true);
             ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
         }
 
@@ -87,6 +121,36 @@ namespace TestPrototype.SharedUI.Services
                 return false;
             }
             return true;
+        }
+
+        // 抽取 Preference 的共用方法
+        private async Task<bool> SyncPreferenceAsync(string cookieKey, string? targetValue, string? formattedCookieValue = null)
+        {
+            // 如果雲端沒有設定偏好，就不做事，也不需要重整
+            if (string.IsNullOrEmpty(targetValue))
+            {
+                return false;
+            }
+
+            // 如果有傳入特定格式，就用特定格式，否則直接用 targetValue
+            var expectedCookie = formattedCookieValue ?? targetValue;
+
+            // 讀取本地目前 Cookie
+            var currentCookie = await _preferenceService.GetValueAsync(cookieKey);
+
+            // 比對並覆寫
+            if (currentCookie != expectedCookie)
+            {
+                await _preferenceService.SetValueAsync(cookieKey, expectedCookie, 365);
+
+                if (cookieKey == "theme" && OperatingSystem.IsBrowser())
+                {
+                    await _preferenceService.SetValueAsync("theme", targetValue);
+                    return false; // JS 變色不需要重整
+                }
+                return true; // 標記為：數值有變，需要重整
+            }
+            return false;
         }
     }
 }

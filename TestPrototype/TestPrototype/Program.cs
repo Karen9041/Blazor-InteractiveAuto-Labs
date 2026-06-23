@@ -16,13 +16,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ServerCookieHandler>();
 builder.Services.AddHttpClient("BffClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7288"); // §ï¦¨§Aªº¦øªA¾¹ºô§}
+    client.BaseAddress = new Uri("https://localhost:7288"); // æ”¹æˆä½ çš„ä¼ºæœå™¨ç¶²å€
 })
-.AddHttpMessageHandler<ServerCookieHandler>(); //ÃöÁä¡G¸Ë¤WÄdºI¾¹
+.AddHttpMessageHandler<ServerCookieHandler>(); //é—œéµï¼šè£ä¸Šæ””æˆªå™¨
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BffClient"));
 builder.Services.AddScoped<IPreferenceService, ServerPreferenceService>();
-// ¨¾¤î¥¼¨Ó³¡¸p¦Ü­t¸ü¥­¿Å¾¹®É¿ò¥¢ Secure ¼ĞÅÒ
+// é˜²æ­¢æœªä¾†éƒ¨ç½²è‡³è² è¼‰å¹³è¡¡å™¨æ™‚éºå¤± Secure æ¨™ç±¤
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -30,14 +30,14 @@ builder.Services.AddAntiforgery(options =>
 
 var app = builder.Build();
 
-// ³]©w¤ä´©ªº»y¨t (¤@©w­n©ñ¦b app.UseRouting() ¤§«e)
+// è¨­å®šæ”¯æ´çš„èªç³» (ä¸€å®šè¦æ”¾åœ¨ app.UseRouting() ä¹‹å‰)
 var supportedCultures = new[] { "en-US", "zh-TW" };
 var localizationOptions = new RequestLocalizationOptions()
-    .SetDefaultCulture(supportedCultures[1]) // ¹w³]¤¤¤å
-    .AddSupportedCultures(supportedCultures) // µù¥U¤é´Á³f¹ô®æ¦¡
-    .AddSupportedUICultures(supportedCultures); // µù¥U UI ¤å¦r
+    .SetDefaultCulture(supportedCultures[1]) // é è¨­ä¸­æ–‡
+    .AddSupportedCultures(supportedCultures) // è¨»å†Šæ—¥æœŸè²¨å¹£æ ¼å¼
+    .AddSupportedUICultures(supportedCultures); // è¨»å†Š UI æ–‡å­—
 
-// ¶}±Ò¨Ã®M¥Î·í¤U»y¨¥¨ì Header (¤è«K¬Y¨Ç API Åª¨ú)
+// é–‹å•Ÿä¸¦å¥—ç”¨ç•¶ä¸‹èªè¨€åˆ° Header (æ–¹ä¾¿æŸäº› API è®€å–)
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 
 app.UseRequestLocalization(localizationOptions);
@@ -72,30 +72,30 @@ app.MapPost("/api/mock/silent-login", (SilentLoginRequestDto req, HttpContext co
 {
     if (string.IsNullOrWhiteSpace(req.Ticket))
     {
-        return Results.BadRequest(new { message = "¯Ê¤Öticket" });
+        return Results.BadRequest(new { message = "ç¼ºå°‘ticket" });
     }
 
-    context.Response.Cookies.Delete("AccessToken"); // ¹w¨¾¦h­M­L
+    context.Response.Cookies.Delete("AccessToken"); // é é˜²å¤šèƒèƒ
 
     var cookieOptions = new CookieOptions
     {
-        HttpOnly = true, //¸T¤î«eºİJSÅª¨ú
-        Secure = true, //­n¨DHttps
+        HttpOnly = true, //ç¦æ­¢å‰ç«¯JSè®€å–
+        Secure = true, //è¦æ±‚Https
         SameSite = SameSiteMode.Lax,
         Path = "/",
         Expires = DateTime.UtcNow.AddDays(7)
     };
 
     context.Response.Cookies.Delete("AccessToken");
-    //cookies¼g¤Jresponse
+    //cookieså¯«å…¥response
     context.Response.Cookies.Append("AccessToken", $"Token_For_{req.Ticket}", cookieOptions);
 
-    return Results.Ok(new { Message = $"ÀRÀqµn¤J¦¨¥\¡AÅwªï {req.Ticket}" } );
+    return Results.Ok(new { Message = $"éœé»˜ç™»å…¥æˆåŠŸï¼Œæ­¡è¿ {req.Ticket}" } );
 });
 
 app.MapPost("/api/mock/login", (LoginRequestDto req, HttpContext context) =>
 {
-    // Demo ¶¥¬q¡G¥u­n¦³¿é¤J±b¸¹´N·í§@¦¨¥\¡A¨Ã§â±b¸¹¦WºÙ¦s¶i Cookie ¼ÒÀÀ¯u¹ê Token
+    // Demo éšæ®µï¼šåªè¦æœ‰è¼¸å…¥å¸³è™Ÿå°±ç•¶ä½œæˆåŠŸï¼Œä¸¦æŠŠå¸³è™Ÿåç¨±å­˜é€² Cookie æ¨¡æ“¬çœŸå¯¦ Token
     if (!string.IsNullOrWhiteSpace(req.Username))
     {
         context.Response.Cookies.Delete("AccessToken");
@@ -109,9 +109,9 @@ app.MapPost("/api/mock/login", (LoginRequestDto req, HttpContext context) =>
             Path = "/",
             Expires = DateTime.UtcNow.AddDays(7)
         });
-        return Results.Ok(new { Message = "µn¤J¦¨¥\" });
+        return Results.Ok(new { Message = "ç™»å…¥æˆåŠŸ" });
     }
-    return Results.BadRequest("½Ğ¿é¤J±b¸¹");
+    return Results.BadRequest("è«‹è¼¸å…¥å¸³è™Ÿ");
 });
 
 app.MapPost("/api/mock/logout", (HttpContext context) =>
@@ -121,43 +121,46 @@ app.MapPost("/api/mock/logout", (HttpContext context) =>
         context.Response.Cookies.Delete("AccessToken");
         context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/" });
         context.Response.Cookies.Delete("AccessToken", new CookieOptions { Path = "/api/mock" });
-        return Results.Ok(new { Message = "Mock Cookie ¤w¦¨¥\§R°£" });
+        return Results.Ok(new { Message = "Mock Cookie å·²æˆåŠŸåˆªé™¤" });
     }
     else
     {
-        return Results.BadRequest(new { Message = "¨S¦³§ä¨ì Mock Cookie" });
+        return Results.BadRequest(new { Message = "æ²’æœ‰æ‰¾åˆ° Mock Cookie" });
     }
 });
 
-//Åı«eºİ¤@¶}ºô­¶´N¨Ó°İ§Ú¬O½Ö
+//è®“å‰ç«¯ä¸€é–‹ç¶²é å°±ä¾†å•æˆ‘æ˜¯èª°
 app.MapGet("api/mock/me", (HttpContext context) =>
 {
-    // 1. ¹Á¸ÕÅª¨ú¦W¬° AccessToken ªº Cookie¡A¨Ã§â¡u­È¡v¦s¶i token ÅÜ¼Æ
+    // 1. å˜—è©¦è®€å–åç‚º AccessToken çš„ Cookieï¼Œä¸¦æŠŠã€Œå€¼ã€å­˜é€² token è®Šæ•¸
     if (context.Request.Cookies.TryGetValue("AccessToken", out var token))
     {
-        // ¦¹®É token ªº­È·|¬O "Token_For_ªL¤f¨®¯«" ©Î¬O "Token_For_Ticket_A"
+        // æ­¤æ™‚ token çš„å€¼æœƒæ˜¯ "Token_For_æ—å£è»Šç¥" æˆ–æ˜¯ "Token_For_Ticket_A"
 
-        // 2. ¦r¦ê³B²z¡G§â«eºó "Token_For_" ¬å±¼¡A³Ñ¤Uªº´N¬O¯u¥¿ªº¦W¦r
+        // 2. å­—ä¸²è™•ç†ï¼šæŠŠå‰ç¶´ "Token_For_" ç æ‰ï¼Œå‰©ä¸‹çš„å°±æ˜¯çœŸæ­£çš„åå­—
         var actualName = token.Replace("Token_For_", "");
 
-        // 3. ¨¾§bÀË¬d¡G¦pªG¬å±¼«á¬OªÅ¦r¦ê¡A¤@¼Ë·í§@µL®Ä¾ÌÃÒ
+        // 3. é˜²å‘†æª¢æŸ¥ï¼šå¦‚æœç æ‰å¾Œæ˜¯ç©ºå­—ä¸²ï¼Œä¸€æ¨£ç•¶ä½œç„¡æ•ˆæ†‘è­‰
         if (string.IsNullOrWhiteSpace(actualName))
         {
             return Results.Unauthorized();
         }
 
-        // 4. °ÊºA²£¥Íª«¥ó¦^¶Ç¡IÅı«eºİ®³¨ì¯u¥¿ªº¦W¦r
+        // 4. å‹•æ…‹ç”¢ç”Ÿç‰©ä»¶å›å‚³ï¼è®“å‰ç«¯æ‹¿åˆ°çœŸæ­£çš„åå­—
         return Results.Ok(new
         {
-            Id = Guid.NewGuid().ToString().Substring(0, 8), // Demo ¥Î¡GÀH¾÷¥Í¤@­Ó°² ID
+            Id = Guid.NewGuid().ToString().Substring(0, 8), // Demo ç”¨ï¼šéš¨æ©Ÿç”Ÿä¸€å€‹å‡ ID
             Name = actualName,
-            // Demo ½ì¨ı«×´£¤É¡G§Q¥Î§K¶O API¡A®Ú¾Ú¦W¦r²£¥Í©T©wªº¥i·R¤jÀY¶K
-            AvatarUrl = $"https://api.dicebear.com/7.x/adventurer/svg?seed={actualName}"
+            // Demo è¶£å‘³åº¦æå‡ï¼šåˆ©ç”¨å…è²» APIï¼Œæ ¹æ“šåå­—ç”¢ç”Ÿå›ºå®šçš„å¯æ„›å¤§é ­è²¼
+            AvatarUrl = $"https://api.dicebear.com/7.x/adventurer/svg?seed={actualName}",
+            // æ•…æ„è¨­å®šèˆ‡ç•¶å‰é›»è…¦ä¸åŒçš„è¨­å®šï¼Œç”¨ä¾†æ¸¬è©¦ç™»å…¥æ™‚çš„ã€Œè‡ªå‹•è¦†å¯«æ©Ÿåˆ¶ã€
+            PreferredLanguage = "en-US",
+            PreferredTheme = "dark"
         });
     }
     else
     {
-        // ¦pªG³s Cookie ³£¨S¦³±a¡A¦^¶Ç 401 ©Úµ´¦s¨ú
+        // å¦‚æœé€£ Cookie éƒ½æ²’æœ‰å¸¶ï¼Œå›å‚³ 401 æ‹’çµ•å­˜å–
         return Results.Unauthorized();
     }
 });

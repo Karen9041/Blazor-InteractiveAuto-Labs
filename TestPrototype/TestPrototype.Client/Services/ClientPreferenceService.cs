@@ -1,4 +1,4 @@
-﻿using Microsoft.JSInterop;
+using Microsoft.JSInterop;
 using TestPrototype.SharedUI.Services;
 public class ClientPreferenceService : IPreferenceService
 {
@@ -16,11 +16,11 @@ public class ClientPreferenceService : IPreferenceService
         }
     }
 
-    public async Task<string> GetValueAsync(string key)
+    public async Task<string?> GetValueAsync(string key)
     {
         if (OperatingSystem.IsBrowser())
         {
-            return await _jsRuntime.InvokeAsync<string>("cookieHelper.get", key);
+            return await _jsRuntime.InvokeAsync<string?>("cookieHelper.get", key);
         }
         return null;
     }

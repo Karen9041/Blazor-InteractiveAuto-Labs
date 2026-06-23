@@ -1,5 +1,4 @@
-﻿@using Microsoft.JSInterop
-@inject IJSRuntime JS
+﻿@inject IPreferenceService PreferenceService
 @inject NavigationManager NavManager
 
 <select class="form-select w-auto" value="@currentCulture" @onchange="ChangeLanguageAsync">
@@ -23,10 +22,10 @@
         // 1. 組合微軟規定的 Cookie 格式
         var CookieValue = $"c={selectedCulture}|uic={selectedCulture}";
 
-        // 2. 透過我們上一階段寫的 cookieHelper 寫入
+        // 2. 透過 PreferenceService 寫入
         if (OperatingSystem.IsBrowser())
         {
-            await JS.InvokeVoidAsync("cookieHelper.set", ".AspNetCore.Culture", CookieValue, 365);
+            await PreferenceService.SetValueAsync(".AspNetCore.Culture", CookieValue);
 
             // 3. 強制重新整理頁面！這非常重要，這能讓 SSR 用新語言重新渲染
             NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
