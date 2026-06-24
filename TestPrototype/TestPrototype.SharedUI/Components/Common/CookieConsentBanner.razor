@@ -1,0 +1,44 @@
+@inject IPreferenceService PreferenceService
+
+@if(_showBanner){
+	<div>
+		<div class="cookie-consent-banner position-fixed bottom-0 start-0 end-0 bg-light p-3 d-flex justify-content-between align-items-center">
+			<div>
+				我們使用 Cookie 來提升您的體驗。繼續使用我們的網站即表示您同意我們的 <a href="/privacy-policy">隱私政策</a>。
+			</div>
+			<div>
+				<button class="btn btn-primary" @onclick="DeclineCookies">拒絕</button>
+				<button class="btn btn-primary" @onclick="AcceptCookies">同意</button>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	private bool _showBanner = false;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var consentGiven = await PreferenceService.GetValueAsync("cookie_consent");
+			if (string.IsNullOrEmpty(consentGiven))
+			{
+				_showBanner = true;
+				StateHasChanged();
+			}
+		}
+	}
+
+	private async Task AcceptCookies()
+	{
+		await PreferenceService.SetValueAsync("cookie_consent", "true");
+		_showBanner = false;
+	}
+
+	private async Task DeclineCookies()
+	{
+		await PreferenceService.SetValueAsync("cookie_consent", "false");
+		_showBanner = false;
+	}
+}

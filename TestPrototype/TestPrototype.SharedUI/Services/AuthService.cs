@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Json;
 using TestPrototype.SharedUI.Models;
@@ -92,8 +92,8 @@ namespace TestPrototype.SharedUI.Services
         public async Task LogoutAsync()
         {
             await _httpClient.PostAsync("api/mock/logout", null);
-            await _preferenceService.SetValueAsync("theme", "", -1); // 設為過期來刪除
-            await _preferenceService.SetValueAsync(".AspNetCore.Culture", "", -1);
+            await _preferenceService.RemoveVauleAsync("theme");
+            await _preferenceService.RemoveVauleAsync(".AspNetCore.Culture");
             _navigationManager.NavigateTo("/", forceLoad: true);
             ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
         }

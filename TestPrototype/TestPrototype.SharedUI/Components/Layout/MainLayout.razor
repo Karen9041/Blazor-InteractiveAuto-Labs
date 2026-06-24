@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @using TestPrototype.SharedUI.Components.Common
 @using TestPrototype.SharedUI.Services
 @using Microsoft.AspNetCore.WebUtilities
@@ -59,8 +59,10 @@
     <div class="mobile-bottom">
 		<BottomNav />
     </div>
+
     <AuthGateKeeper />
     <AccountConflictModal />
+	<CookieConsentBanner />
 </div>
 
 @code{

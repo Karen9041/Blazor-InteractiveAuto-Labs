@@ -4,5 +4,6 @@ namespace TestPrototype.SharedUI.Services
     {
         Task SetValueAsync(string key, string value, int expirationDays = 365);
         Task<string?> GetValueAsync(string key);
+        Task RemoveVauleAsync(string key);
     }
 }

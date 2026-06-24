@@ -1,4 +1,4 @@
-﻿window.cookieHelper = {
+window.cookieHelper = {
     set: function (name, value, days) {
         var expires = "";
         if (days) {
@@ -19,5 +19,9 @@
             if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
         }
         return null;
+    },
+
+    remove: function (name) {
+        document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';
     }
 };

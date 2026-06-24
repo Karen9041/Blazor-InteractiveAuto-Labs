@@ -14,6 +14,15 @@ public class ServerPreferenceService:IPreferenceService
         var context = _httpContextAccessor.HttpContext;
         if(context != null)
         {
+            if (key != "cookie_consent")
+            {
+                var hasConsent = context.Request.Cookies["cookie_consent"];
+                if (hasConsent != "true")
+                {
+                    return Task.CompletedTask; // 拒絕透過 Response 寫入！
+                }
+            }
+
             var options = new CookieOptions
             {
                 Path = "/",
@@ -35,5 +44,12 @@ public class ServerPreferenceService:IPreferenceService
         var context = _httpContextAccessor.HttpContext;
         var value = context?.Request.Cookies[key];
         return Task.FromResult(value);
+    }
+
+    public Task RemoveVauleAsync(string key)
+    {
+        var context = _httpContextAccessor.HttpContext;
+        context?.Response.Cookies.Delete(key);
+        return Task.CompletedTask;
     }
 }
