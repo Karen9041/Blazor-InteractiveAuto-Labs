@@ -1,0 +1,27 @@
+@if (State == UIState.Loading)
+{
+	@LoadingContent
+}
+else if (State == UIState.Empty)
+{
+	@EmptyContent
+}
+else if (State == UIState.Error)
+{
+	@ErrorContent
+}
+else
+{
+	@ChildContent
+}
+
+@code {
+	[Parameter] public UIState State { get; set; } = UIState.Loading;
+
+	[Parameter] public RenderFragment? LoadingContent { get; set; }
+	[Parameter] public RenderFragment? EmptyContent { get; set; }
+	[Parameter] public RenderFragment? ErrorContent { get; set; }
+
+	// 在 Blazor 中，預設夾在標籤中間的內容叫做 ChildContent
+	[Parameter] public RenderFragment? ChildContent { get; set; }
+}

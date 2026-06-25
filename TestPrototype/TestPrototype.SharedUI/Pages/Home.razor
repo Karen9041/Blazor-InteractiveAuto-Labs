@@ -1,7 +1,8 @@
-﻿@using TestPrototype.SharedUI.Components.Common
+@using TestPrototype.SharedUI.Components.Common
 @using TestPrototype.SharedUI.Models
 @using TestPrototype.SharedUI.Services
 @inject NavigationManager NavManager
+@inject PersistentComponentState ApplicationState
 @inject IFeedService FeedService
 @page "/"
 
@@ -9,84 +10,136 @@
 @implements IDisposable
 
 <div class="home-container d-flex flex-column">
-	<CategoryNav />
+	<div class="category-container d-flex" style="height:63px">
+		<CategoryNav />
+	</div>
     <div class="post-container d-flex flex-column justify-content-center gap-4 w-100 ">
-        @if (isLoading)
-        {
-            <p class="mt-2">載入中...</p>
-        }
-        else if (!FilteredPosts.Any())
-        {
-            <div class="text-center text-muted my-5">
-                <p class="mt-2">這個分類目前還沒有貼文喔！</p>
-            </div>
-        }
-        else
-        {
-            @foreach (var post in FilteredPosts)
-            {
-                <PostCard PostData="post" />
-            }
-        }
+		<StateBoundary State="@_currentState">
+			<LoadingContent>
+				@for(int i = 0; i < 3; i++)
+				{
+					<PostCardSkelenton />
+				}
+			</LoadingContent>
+			<EmptyContent>
+				<div>目前沒有貼文，去發一篇吧！</div>
+			</EmptyContent>
+			<ErrorContent>
+				<div>糟糕，載入失敗。 <button @onclick="LoadDataAsync">重試</button></div>
+			</ErrorContent>
+			<ChildContent>
+				@if (!FilteredPosts.Any())
+				{
+				<div class="text-center text-muted my-5">
+					<p class="mt-2">這個分類目前還沒有貼文喔！</p>
+				</div>
+				}
+				else
+				{
+					@foreach (var post in FilteredPosts)
+					{
+						<PostCard PostData="post" />
+					}
+				}
+			</ChildContent>
+		</StateBoundary>
     </div>
 </div>
 
 @code{
-    //接收網址上的 ?tag= 參數
-    [SupplyParameterFromQuery(Name = "tag")]
-    public string? SearchTag { get; set; }
-    private bool isLoading = true;
-    private List<PostDto>? AllPosts = new();
+	//接收網址上的 ?tag= 參數
+	[SupplyParameterFromQuery(Name = "tag")]
+	public string? SearchTag { get; set; }
+	private UIState _currentState = UIState.Loading;
+	private List<PostDto>? _allPosts = new();
+	private PersistingComponentStateSubscription _subscription;
 
-    protected override async Task OnInitializedAsync()
-    {
-        CategoryState.OnChange += HandleCategoryChanged;
-        FeedService.OnFeedUpdated += RefreshFeed;
+	protected override async Task OnInitializedAsync()
+	{
+		//如果等一下要打包 SSR，請呼叫 PersistData 方法
+		_subscription = ApplicationState.RegisterOnPersisting(PersistData);
 
-        await LoadData();
-    }
+		CategoryState.OnChange += HandleCategoryChanged;
+		FeedService.OnFeedUpdated += RefreshFeed;
 
-    private async Task LoadData()
-    {
-        AllPosts = await FeedService.GetTimelineAsync();
-        isLoading = false;
-        StateHasChanged();
-    }
+		//是不是被 WASM 喚醒的？有沒有 SSR 留下來的遺產？
+		if (ApplicationState.TryTakeFromJson<List<PostDto>>("feed_data", out var restored))
+		{
+			// 有遺產 直接沿用，不要打 API，也不要顯示骨架屏
+			_allPosts = restored!;
+			_currentState = UIState.Success;
+		}
+		else
+		{
+			await LoadDataAsync();
+		}
+	}
 
-    private async void RefreshFeed()
-    {
-        await LoadData();
-    }
+	private async Task LoadDataAsync()
+	{
+		try
+		{
+			_allPosts = await FeedService.GetTimelineAsync();
+			if (_allPosts.Count == 0)
+			{
+				_currentState = UIState.Empty;
+				StateHasChanged();
+			}
+			else
+			{
+				_currentState = UIState.Success;
+				StateHasChanged();
+			}
+		}
+		catch
+		{
+			_currentState = UIState.Error;
+		}
+	}
 
-    private IEnumerable<PostDto> FilteredPosts
-    {
-        get
-        {
-            var posts = AllPosts.AsEnumerable();
+	private async void RefreshFeed()
+	{
+		await LoadDataAsync();
+	}
 
-            // 如果有帶 tag 參數，就把符合該 tag 的貼文「排在最前面」(置頂)
-            if (!string.IsNullOrEmpty(SearchTag))
-            {
-                posts = posts.OrderByDescending(p => p.Content.Contains(SearchTag));
-            }
+	private IEnumerable<PostDto> FilteredPosts
+	{
+		get
+		{
+			var posts = _allPosts.AsEnumerable();
 
-            if (CategoryState.SelectedCategory == "綜合大廳")
-            {
-                return posts;
-            }
-            return posts.Where(p => p.Category == CategoryState.SelectedCategory);
-        }
-    }
+			// 如果有帶 tag 參數，就把符合該 tag 的貼文「排在最前面」(置頂)
+			if (!string.IsNullOrEmpty(SearchTag))
+			{
+				posts = posts.OrderByDescending(p => p.Content.Contains(SearchTag));
+			}
 
-    private void HandleCategoryChanged()
-    {
-        StateHasChanged();
-    }
+			if (CategoryState.SelectedCategory == "綜合大廳")
+			{
+				return posts;
+			}
+			return posts.Where(p => p.Category == CategoryState.SelectedCategory);
+		}
+	}
+
+	private void HandleCategoryChanged()
+	{
+		StateHasChanged();
+	}
+
+	// 這是只有在 SSR 階段結束、準備把 HTML 送給瀏覽器前，才會被觸發的方法
+	private Task PersistData()
+	{
+		// 將目前的貼文清單打包成 JSON 塞進 HTML 中
+		ApplicationState.PersistAsJson("feed_data", _allPosts);
+		return Task.CompletedTask;
+	}
 
     public void Dispose()
     {
         CategoryState.OnChange -= HandleCategoryChanged;
         FeedService.OnFeedUpdated -= RefreshFeed;
+		_subscription.Dispose();
     }
 }
 

@@ -1,0 +1,42 @@
+@* aria-hidden 讓報讀軟體忽略這個純視覺過渡元件 *@
+<div class="post-card-container mb-3" aria-hidden="true">
+	@* 加入 placeholder-glow 啟動呼吸燈動畫 *@
+	<article class="post-card card w-100 border-bottom placeholder-glow">
+
+		@* 1. 模擬 Header (頭像與作者資訊) *@
+		<div class="post-card-header d-flex align-items-center gap-3 p-3">
+			@* 模擬大頭貼 (圓形) *@
+			<div class="placeholder rounded-circle" style="width: 40px; height: 40px;"></div>
+
+			<div class="d-flex flex-column flex-grow-1">
+				@* 模擬作者名稱 (較短、較粗) *@
+				<span class="placeholder col-3 mb-1 bg-secondary"></span>
+				@* 模擬發文時間與成就 (更短、較細) *@
+				<span class="placeholder col-2 placeholder-sm bg-secondary opacity-50"></span>
+			</div>
+		</div>
+
+		@* 2. 模擬 Body (貼文內容與圖片) *@
+		<div class="card-body pt-0 pb-2">
+			@* 模擬 2~3 行的不規則文字段落 *@
+			<p class="card-text">
+				<span class="placeholder col-7 bg-secondary opacity-75"></span>
+				<span class="placeholder col-4 bg-secondary opacity-75"></span>
+				<span class="placeholder col-4 bg-secondary opacity-75"></span>
+				<span class="placeholder col-6 bg-secondary opacity-75"></span>
+				<span class="placeholder col-8 bg-secondary opacity-75"></span>
+			</p>
+
+			@* 模擬附圖 (這很重要，用來撐起平均高度，防止版面跳動) *@
+			<div class="placeholder w-100 rounded mt-2 bg-secondary opacity-25" style="height: 200px;"></div>
+		</div>
+
+		@* 3. 模擬 Footer (按讚、留言、分享三個區塊) *@
+		<div class="post-card-footer d-flex p-2 gap-1 border-top">
+			<span class="placeholder col-1 rounded-pill bg-secondary opacity-50"></span>
+			<span class="placeholder col-1 rounded-pill bg-secondary opacity-50"></span>
+			<span class="placeholder col-1 rounded-pill bg-secondary opacity-50"></span>
+		</div>
+
+	</article>
+</div>

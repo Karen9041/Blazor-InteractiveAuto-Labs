@@ -1,4 +1,4 @@
-﻿using TestPrototype.SharedUI.Models;
+using TestPrototype.SharedUI.Models;
 using TestPrototype.SharedUI.Services;
 
 public class MockFeedService: IFeedService
@@ -36,7 +36,7 @@ public class MockFeedService: IFeedService
 
     public async Task<List<PostDto>> GetTimelineAsync()
     {
-        await Task.Delay(500); // 模擬網路傳輸
+        await Task.Delay(2000); // 模擬網路傳輸
 
         return _mockDatabase.OrderByDescending(p => p.Id).ToList(); ;
     }
