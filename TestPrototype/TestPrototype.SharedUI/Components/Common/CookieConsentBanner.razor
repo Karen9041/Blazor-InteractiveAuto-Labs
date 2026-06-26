@@ -1,10 +1,11 @@
-@inject IPreferenceService PreferenceService
+﻿@inject IPreferenceService PreferenceService
+@inject NavigationManager NavManager
 
 @if(_showBanner){
 	<div>
 		<div class="cookie-consent-banner position-fixed bottom-0 start-0 end-0 bg-light p-3 d-flex justify-content-between align-items-center">
 			<div>
-				我們使用 Cookie 來提升您的體驗。繼續使用我們的網站即表示您同意我們的 <a href="/privacy-policy">隱私政策</a>。
+				我們使用 Cookie 來提升您的體驗。繼續使用我們的網站即表示您同意我們的 <a href="@PrivacyPolicyHref">隱私政策</a>。
 			</div>
 			<div>
 				<button class="btn btn-primary" @onclick="DeclineCookies">拒絕</button>
@@ -16,6 +17,7 @@
 
 @code {
 	private bool _showBanner = false;
+	private string PrivacyPolicyHref => NavManager.ToLocalizedPath("/privacy-policy");
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{

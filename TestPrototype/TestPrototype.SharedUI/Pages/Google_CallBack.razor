@@ -1,4 +1,5 @@
 ﻿@page "/google-callback"
+@page "/{Culture:length(5)}/google-callback"
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
 @using System.Net.Http.Json
@@ -6,6 +7,8 @@
 <p>正在與伺服器進行安全驗證，請稍候...</p>
 
 @code {
+    [Parameter] public string? Culture { get; set; }
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string? code { get; set; }
@@ -18,7 +21,7 @@
     {
         if (string.IsNullOrEmpty(code))
         {
-            Navigation.NavigateTo("/login?error=missing_code");
+            Navigation.NavigateToLocalized("/login?error=missing_code");
             return;
         }
         var isSuccess = false;
@@ -29,15 +32,15 @@
         }
         catch (Exception)
         {
-            Navigation.NavigateTo("/login?error=network_error");
+            Navigation.NavigateToLocalized("/login?error=network_error");
         }
         if (isSuccess)
         {
-            Navigation.NavigateTo("/");
+            Navigation.NavigateToLocalized("/");
         }
         else
         {
-            Navigation.NavigateTo("/login?error=api_auth_failed");
+            Navigation.NavigateToLocalized("/login?error=api_auth_failed");
         }
 
     }

@@ -1,7 +1,9 @@
 using TestPrototype.Components;
 using TestPrototype.SharedUI;
+using TestPrototype.SharedUI.Extensions;
 using TestPrototype.SharedUI.Services;
 using TestPrototype.SharedUI.Models;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,16 +33,42 @@ builder.Services.AddAntiforgery(options =>
 var app = builder.Build();
 
 // 設定支援的語系 (一定要放在 app.UseRouting() 之前)
-var supportedCultures = new[] { "en-US", "zh-TW" };
+var supportedCultures = CultureRouteHelper.SupportedCultures;
 var localizationOptions = new RequestLocalizationOptions()
-    .SetDefaultCulture(supportedCultures[1]) // 預設中文
+    .SetDefaultCulture(CultureRouteHelper.DefaultCulture) // 預設中文
     .AddSupportedCultures(supportedCultures) // 註冊日期貨幣格式
     .AddSupportedUICultures(supportedCultures); // 註冊 UI 文字
+
+localizationOptions.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
+{
+    var routeCulture = CultureRouteHelper.GetCultureFromPath(context.Request.Path.Value);
+    return Task.FromResult(routeCulture is null ? null : new ProviderCultureResult(routeCulture, routeCulture));
+}));
 
 // 開啟並套用當下語言到 Header (方便某些 API 讀取)
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 
 app.UseRequestLocalization(localizationOptions);
+
+app.Use(async (context, next) =>
+{
+    var routeCulture = CultureRouteHelper.GetCultureFromPath(context.Request.Path.Value);
+    if (routeCulture is not null)
+    {
+        context.Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(routeCulture, routeCulture)),
+            new CookieOptions
+            {
+                Path = "/",
+                SameSite = SameSiteMode.Lax,
+                Secure = context.Request.IsHttps,
+                Expires = DateTimeOffset.UtcNow.AddYears(1)
+            });
+    }
+
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -56,8 +84,52 @@ else
 
 app.UseHttpsRedirection();
 
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+
+    // 如果請求路徑包含 /_framework/，但前面卻帶有語系 (例如 /zh-TW/_framework/dotnet.js)
+    if (path != null && path.Contains("/_framework/") && !path.StartsWith("/_framework/"))
+    {
+        // 直接把前面的字串切掉，強制指向根目錄的 /_framework/
+        context.Request.Path = path.Substring(path.IndexOf("/_framework/"));
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+//根目錄語言轉址攔截器 (Hybrid i18n)
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+
+    //如果請求的是靜態檔案路徑，直接跳過攔截
+    if (path != null && (path.StartsWith("/css/") || path.StartsWith("/js/") || path.StartsWith("/_content/") || path.EndsWith(".css") || path.EndsWith(".js")))
+    {
+        await next();
+        return;
+    }
+
+    // 只有當使用者訪問「純根目錄」時才進行轉址
+    if (path == "/")
+    {
+        var userCulture = CultureRouteHelper.DefaultCulture;
+        if (context.Request.Cookies.TryGetValue(CookieRequestCultureProvider.DefaultCookieName, out var cultureCookie))
+        {
+            var parsedCookie = CookieRequestCultureProvider.ParseCookieValue(cultureCookie);
+            userCulture = CultureRouteHelper.NormalizeCulture(parsedCookie?.Cultures.FirstOrDefault().Value);
+        }
+
+        // 302 轉址到帶有語系的網址
+        context.Response.Redirect($"/{userCulture}/");
+        return;
+    }
+
+    await next();
+});
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

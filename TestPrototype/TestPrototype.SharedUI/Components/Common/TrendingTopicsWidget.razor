@@ -1,6 +1,7 @@
 ﻿@using TestPrototype.SharedUI.Services
 @using TestPrototype.SharedUI.Models
 @inject IExploreService ExploreService
+@inject NavigationManager NavManager
 
 <div class="trending-block bg-white shadow-sm mb-4">
     <span class="trending-block-title d-flex align-items-center mb-3">
@@ -20,7 +21,7 @@
                     <div class="topic-item-rank-category">
                         排名 @topic.Rank ‧ @topic.Category
                     </div>
-                    <a href="/?tag=@Uri.EscapeDataString(topic.TopicName)" class="topic-item-title">@topic.TopicName</a>
+                    <a href="@TopicHref(topic.TopicName)" class="topic-item-title">@topic.TopicName</a>
                     <div class="topic-item-discussion-count" style="font-size: 0.75rem;">
                         @topic.DiscussionCount 篇討論
                     </div>
@@ -36,5 +37,10 @@
 	protected override async Task OnInitializedAsync()
 	{
 		Topics = await ExploreService.GetTrendingTopicsAsync();
+	}
+
+	private string TopicHref(string topicName)
+	{
+		return NavManager.ToLocalizedPath($"?tag={Uri.EscapeDataString(topicName)}");
 	}
 }

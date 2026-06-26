@@ -1,4 +1,18 @@
-# Blazor InteractiveAuto Labs 
+﻿# Blazor InteractiveAuto Labs 
+
+
+## 2026-06-26 i18n route-first update
+
+This branch adds a route-first / cookie-fallback i18n flow for Blazor InteractiveAuto:
+
+- The first URL segment is the primary culture source, for example `/zh-TW/` or `/en-US/login`.
+- `.AspNetCore.Culture` is used only as fallback and as the remembered last culture.
+- Server `RequestLocalizationOptions` now includes a route-first provider and writes the route culture back to the culture cookie.
+- WASM startup reads route culture before cookie culture to avoid SSR/WASM hydration culture drift.
+- Navigation components and internal links use culture-aware helpers to keep the current culture in generated URLs.
+- `LanguageSwitcher` now navigates to the computed culture URL instead of reloading the old URL.
+
+Technical note: [docs/i18n-route-cookie-culture.md](docs/i18n-route-cookie-culture.md).
 
 本儲存庫為 **Blazor InteractiveAuto (SSR + WASM 混合模式)** 的實驗與概念驗證（PoC）專案，專注於研究混合渲染模式下的水合現象（Hydration）、狀態同步、生命週期控管以及極致的使用者體驗優化。
 
