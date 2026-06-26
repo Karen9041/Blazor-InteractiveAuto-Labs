@@ -1,25 +1,32 @@
-﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Models
 @using TestPrototype.SharedUI.Services
-
-@inject ICategoryService CategoryService
-@inject CategoryStateService CategoryState
-@implements IDisposable
-
 @using Microsoft.JSInterop
+
+@inject CategoryStateService CategoryState
 @inject IJSRuntime JS
+@implements IDisposable
 @implements IAsyncDisposable
 
-<div @ref="scrollAreaRef" class="category-container border-bottom w-100 sticky-top d-flex gap-2 hide-scrollbar">
-	@if (Categories != null)
-	{
-		@foreach (var category in Categories)
+@if (!CategoryState.Categories.Any())
+{
+	@*骨架屏佔位 *@
+	<div class="category-container border-bottom w-100 sticky-top d-flex gap-2 p-2 placeholder-glow" style="min-height: 57px;">
+		<span class="placeholder col-2 rounded btn-sm"></span>
+		<span class="placeholder col-2 rounded btn-sm"></span>
+		<span class="placeholder col-2 rounded btn-sm"></span>
+	</div>
+}
+else
+{
+	<div @ref="scrollAreaRef" class="category-container border-bottom w-100 sticky-top d-flex gap-2 hide-scrollbar">
+		@foreach (var category in CategoryState.Categories)
 		{
 			<button class="btn text-nowrap @(IsActive(category.Name) ? "active" : "")" @onclick="() => SelectCategory(category.Name)">
 				@category.Emoji @category.Name
 			</button>
 		}
-	}
-</div>
+	</div>
+}
 
 @code {
 	private IJSObjectReference? module;
@@ -31,22 +38,14 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		Categories = await CategoryService.GetCategoriesAsync();
-	}
-
-	protected override void OnInitialized()
-	{
 		CategoryState.OnChange += StateHasChanged;
+		// SSR 遺產
+		await CategoryState.EnsureCategoriesLoadedAsync();
 	}
 
 	private void SelectCategory(string category)
 	{
 		CategoryState.SelectCategory(category);
-	}
-
-	public void Dispose()
-	{
-		CategoryState.OnChange -= StateHasChanged;
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -62,6 +61,11 @@
 				await module.InvokeVoidAsync("enableHorizontalScroll", scrollAreaRef);
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		CategoryState.OnChange -= StateHasChanged;
 	}
 
 	public async ValueTask DisposeAsync()

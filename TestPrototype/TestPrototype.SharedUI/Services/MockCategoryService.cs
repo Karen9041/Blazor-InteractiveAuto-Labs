@@ -1,4 +1,4 @@
-﻿using TestPrototype.SharedUI.Models;
+using TestPrototype.SharedUI.Models;
 
 namespace TestPrototype.SharedUI.Services
 {
@@ -7,7 +7,7 @@ namespace TestPrototype.SharedUI.Services
         public async Task<List<CategoryDto>> GetCategoriesAsync()
         {
             // 模擬延遲
-            await Task.Delay(100);
+            await Task.Delay(2000);
 
             return new List<CategoryDto>
             {

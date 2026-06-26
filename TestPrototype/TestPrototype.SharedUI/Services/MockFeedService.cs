@@ -36,7 +36,7 @@ public class MockFeedService: IFeedService
 
     public async Task<List<PostDto>> GetTimelineAsync()
     {
-        await Task.Delay(2000); // 模擬網路傳輸
+        await Task.Delay(2000); // 模擬網路傳輸，測試UIState跟Skeleton顯示
 
         return _mockDatabase.OrderByDescending(p => p.Id).ToList(); ;
     }
