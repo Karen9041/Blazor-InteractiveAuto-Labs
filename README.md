@@ -1,35 +1,32 @@
 ﻿# Blazor InteractiveAuto Labs 
 
-
-## 2026-06-26 i18n route-first update
-
-This branch adds a route-first / cookie-fallback i18n flow for Blazor InteractiveAuto:
-
-- The first URL segment is the primary culture source, for example `/zh-TW/` or `/en-US/login`.
-- `.AspNetCore.Culture` is used only as fallback and as the remembered last culture.
-- Server `RequestLocalizationOptions` now includes a route-first provider and writes the route culture back to the culture cookie.
-- WASM startup reads route culture before cookie culture to avoid SSR/WASM hydration culture drift.
-- Navigation components and internal links use culture-aware helpers to keep the current culture in generated URLs.
-- `LanguageSwitcher` now navigates to the computed culture URL instead of reloading the old URL.
-
-Technical note: [docs/i18n-route-cookie-culture.md](docs/i18n-route-cookie-culture.md).
-
 本儲存庫為 **Blazor InteractiveAuto (SSR + WASM 混合模式)** 的實驗與概念驗證（PoC）專案，專注於研究混合渲染模式下的水合現象（Hydration）、狀態同步、生命週期控管以及極致的使用者體驗優化。
 
 ## 🧪 已實現之技術實驗清單
 
 下方列出專案中針對各種技術痛點所進行的實驗與實作場景：
 
-| 技術主題 / 機制 | 實驗目的與解決痛點 | 核心實作位置 |
-| :--- | :--- | :--- |
+| **技術主題 / 機制** | **實驗目的與解決痛點** | **核心實作位置** |
+| --- | --- | --- |
 | **InteractiveAuto 生命週期** | 驗證兩端生命週期重複執行機制，進行正確的資料抓取控管。 | `App.razor` / 各頁面組件 |
 | **Hydration 抗閃爍動畫** | 透過環境感知，在 WASM 水合接管前鎖定樣式，避免 UI 閃爍。 | `MainLayout.razor` (`isHydrating`) |
-| **網址 Ticket 靜默登入** | 訪客進入時，由瀏覽器背景靜默換取 Cookie 身分，並自動清理網址。 | `AuthGateKeeper.razor` |
-| **多帳號身分衝突攔截** | 當瀏覽器已有人登入卻又帶入新 Ticket 時，攔截並顯示衝突解決彈窗。 | `AuthService.cs` / `LoginPrompt` |
+| **網址 Ticket 靜默登入** | 訪客進入時，由瀏覽器背景靜默換取 Cookie 身分，並自動清理網址。 | `AuthGateKeeper.razor`
+ |
+| **多帳號身分衝突攔截** | 當瀏覽器已有人登入卻又帶入新 Ticket 時，攔截並顯示衝突解決彈窗。 | `AuthService.cs` / `LoginPrompt`
+ |
 | **BFF 雙端偏好同步** | 結合 GDPR 同意機制，將雲端 Theme/i18n 偏好於 SSR/WASM 雙端無縫寫入。 | `PreferenceService` 實作 |
-| **全域 UI 狀態機包裹器** | 打造 `<StateBoundary>`，統一處理 Loading、Success、Empty、Error 四大狀態。 | `StateBoundary.razor` |
-| **骨架屏與 CLS 防治** | 實作 Skeleton 佔位，抽離 JS 依賴至 Service，消滅累積版面配置轉移 (CLS)。 | `PostCardSkeleton.razor` |
-| **SSR 水合狀態無縫繼承** | 透過 `PersistentComponentState` 將 SSR 首屏資料轉交 WASM，達成零閃爍接管。 | `CustomAuthStateProvider.cs` |
+| **全域 UI 狀態機包裹器** | 打造 `<StateBoundary>`，統一處理 Loading、Success、Empty、Error 四大狀態。 | `StateBoundary.razor`
+ |
+| **骨架屏與 CLS 防治** | 實作 Skeleton 佔位，抽離 JS 依賴至 Service，消滅累積版面配置轉移 (CLS)。 | `PostCardSkeleton.razor`
+ |
+| **SSR 水合狀態無縫繼承** | 透過 `PersistentComponentState` 將 SSR 首屏資料轉交 WASM，達成零閃爍接管。 | `CustomAuthStateProvider.cs`
+ |
+| **路由優先多語系(i18n Route-First)** | 以 URL 第一區段為主要語系來源（如 `/zh-TW/` 或 `/en-US/login`），WASM 啟動時優先讀取路由語系，徹底消滅 SSR 與 WASM 之間的水合語系漂移（Hydration Drift）。 | `TestPrototype.Client/Program.cs` /`CultureRouteHelper.cs`
+ |
+| **Cookie 語系備援與回寫** | `.AspNetCore.Culture` 僅作為無路由語系時的備援與最後選擇記憶。伺服器端會自動將路由語系回寫至標準 Culture Cookie 中。 | `TestPrototype/Program.cs`(`CustomRequestCultureProvider`) |
+| **語系感知導覽與內部連結** | 全站內部連結與導覽組件均導入語系感知擴充方法，確保站內跳轉時能在產生的網址中自動延續當前語系狀態，避免破壞路由規則。 | `NavigationExtensions.cs` /`NavMenu`, `BottomNav`, `Logo`, `Footer` 等 |
+| **智慧語系切換機制** | 修正舊版重新載入原網址的錯誤，新版切換器會寫入 Cookie 並動態計算該頁面的新語系 URL，搭配 `forceLoad: true` 導向以觸發 SSR 完美重新渲染。 | `LanguageSwitcher.razor`
+ |
 
 ## 🌟 核心架構亮點 (Core Architecture Highlights)
 
@@ -89,7 +86,7 @@ graph TD
 
 ### 2. 智慧型雙端偏好同步與隱私防護 (BFF & GDPR Compliant Preference Sync)
 
-本專案針對 Blazor InteractiveAuto 模式，打造了極度嚴密的使用者偏好（Theme、i18n）同步架構，確保跨裝置體驗無縫接軌且符合現代隱私法規。
+本專案針對 Blazor InteractiveAuto 模式，打造了極度嚴密的使用者偏好（Theme、i18n/Culture）同步架構，確保跨裝置體驗無縫接軌且符合現代隱私法規。
 
 #### 隱私法規守門員 (Cookie Consent Gatekeeper)
 
@@ -102,7 +99,7 @@ graph TD
 為了確保乾淨的 API 職責分離：
 1. **驗證階段：** 前端呼叫 `/api/mock/login` 僅換取乾淨的 `Token`。
 2. **偏好拉取：** 攔截器立刻攜帶 Token 呼叫 `/api/mock/me` 獲取完整 `UserDto`。
-3. **智慧重整 (Smart Reload)：** 系統比對雲端偏好與本地 Cookie 差異，僅在「語系 (Culture)」真正發生改變時，才觸發 `forceLoad: true`，大幅減少不必要的畫面閃爍。
+3. **智慧重整 (Smart Reload)：** 系統會比對雲端偏好與本地 Cookie/網址路由的差異，僅在語系真正改變時才觸發 `forceLoad: true`，大幅減少不必要的畫面閃爍。
 
 #### 雙端寫入策略 (InteractiveAuto Compatibility)
 
