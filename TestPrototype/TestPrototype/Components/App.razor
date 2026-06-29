@@ -1,4 +1,4 @@
-﻿@using TestPrototype.SharedUI.Components
+@using TestPrototype.SharedUI.Components
 @inject IPreferenceService PreferenceService
 
 @{
@@ -14,15 +14,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="TestPrototype.styles.css" />
+	<base href="/" />
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/TestPrototype.styles.css" />
 
-    <link rel="stylesheet" href="_content/TestPrototype.SharedUI/css/app.min.css" />
+    <link rel="stylesheet" href="/_content/TestPrototype.SharedUI/css/app.min.css" />
 
     <HeadOutlet @rendermode="InteractiveAuto" />
-    <script src="_content/TestPrototype.SharedUI/js/cookieHelper.js"></script>
-    <script src="_content/TestPrototype.SharedUI/js/themeHelper.js"></script>
+    <script src="/_content/TestPrototype.SharedUI/js/cookieHelper.js"></script>
+    <script src="/_content/TestPrototype.SharedUI/js/themeHelper.js"></script>
     <script>
         if (!document.documentElement.getAttribute('data-theme')) {
             window.themeHelper.applyTheme('system');

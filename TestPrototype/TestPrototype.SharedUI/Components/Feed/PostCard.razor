@@ -6,6 +6,7 @@
 
 @inject CategoryStateService CategoryState
 @inject IAuthService AuthService
+@inject NavigationManager NavManager
 
 <div class="post-card-container">
     <article class="post-card card w-100 border-bottom">
@@ -117,7 +118,7 @@
 
                 string encodedTag = Uri.EscapeDataString(match.Value);
 
-                return $"<a href=\"?tag={encodedTag}\" class=\"post-content-text-hashtag\">{match.Value}</a>";
+                return $"<a href=\"{NavManager.ToLocalizedPath($"?tag={encodedTag}")}\" class=\"post-content-text-hashtag\">{match.Value}</a>";
 
             });
             

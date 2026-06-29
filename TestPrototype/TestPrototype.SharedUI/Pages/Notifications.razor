@@ -1,5 +1,12 @@
 ﻿@page "/notification"
+@page "/notifications"
+@page "/{Culture:length(5)}/notification"
+@page "/{Culture:length(5)}/notifications"
 
 <h3>Notifications</h3>
+
+@code {
+    [Parameter] public string? Culture { get; set; }
+}
 
 

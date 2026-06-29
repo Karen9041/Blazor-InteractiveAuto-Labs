@@ -1,4 +1,5 @@
 ﻿@page "/app-simulator"
+@page "/{Culture:length(5)}/app-simulator"
 @inject NavigationManager NavigationManager
 
 <div style="background-color: #222; color: white; padding: 50px; text-align: center; height: 100vh;">
@@ -19,10 +20,12 @@
 </div>
 
 @code {
+    [Parameter] public string? Culture { get; set; }
+
     private void JumpToWeb(string ticket)
     {
         // 新版寫法：直接跳轉到首頁 ( / ) 並夾帶 ticket。
         // AuthGatekeeper 會在首頁載入的瞬間，自動接手後續的所有登入與 Modal 攔截！
-        NavigationManager.NavigateTo($"/?ticket={ticket}");
+        NavigationManager.NavigateToLocalized($"/?ticket={ticket}");
     }
 }

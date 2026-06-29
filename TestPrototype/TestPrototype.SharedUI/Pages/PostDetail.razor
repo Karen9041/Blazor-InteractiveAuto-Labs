@@ -1,6 +1,6 @@
-﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Models
 
-@page "/post/{PostId}"
+@page "/{Culture:length(5)}/post/{PostId}"
 @if (currentPost == null)
 {
     <p>載入中，或者找不到該貼文...</p>
@@ -15,6 +15,7 @@ else
 }
 
 @code {
+	[Parameter] public string Culture { get; set; } = "zh-TW";
     // 這個屬性會自動接住網址列上的 {PostId}
     [Parameter] public string PostId { get; set; }
 

@@ -1,4 +1,4 @@
-﻿@inject IPreferenceService PreferenceService
+@inject IPreferenceService PreferenceService
 @inject NavigationManager NavManager
 
 <select class="form-select w-auto" value="@currentCulture" @onchange="ChangeLanguageAsync">
@@ -7,28 +7,29 @@
 </select>
 
 @code {
-    private string currentCulture = "zh-TW";
+	private string currentCulture = "zh-TW";
 
-    protected override void OnInitialized()
-    {
-        // 抓取目前的語系
-        currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
-    }
+	protected override void OnInitialized()
+	{
+		// 抓取目前的語系
+		currentCulture = System.Globalization.CultureInfo.CurrentCulture.Name;
+	}
 
-    private async Task ChangeLanguageAsync(ChangeEventArgs e)
-    {
-        var selectedCulture = e.Value?.ToString() ?? "zh-TW";
+	private async Task ChangeLanguageAsync(ChangeEventArgs e)
+	{
+		var selectedCulture = e.Value?.ToString() ?? "zh-TW";
 
-        // 1. 組合微軟規定的 Cookie 格式
-        var CookieValue = $"c={selectedCulture}|uic={selectedCulture}";
+		// 組合微軟規定的 Cookie 格式
+		var CookieValue = $"c={selectedCulture}|uic={selectedCulture}";
 
-        // 2. 透過 PreferenceService 寫入
-        if (OperatingSystem.IsBrowser())
-        {
-            await PreferenceService.SetValueAsync(".AspNetCore.Culture", CookieValue);
+		// 透過 PreferenceService 寫入
+		if (OperatingSystem.IsBrowser())
+		{
+			await PreferenceService.SetValueAsync(".AspNetCore.Culture", CookieValue);
+			var newUrl = NavManager.ToLocalizedCurrentPath(selectedCulture);
 
-            // 3. 強制重新整理頁面！這非常重要，這能讓 SSR 用新語言重新渲染
-            NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+			// 強制重新整理頁面，這能讓 SSR 用新語言重新渲染
+            NavManager.NavigateTo(newUrl, forceLoad: true);
         }
     }
 }

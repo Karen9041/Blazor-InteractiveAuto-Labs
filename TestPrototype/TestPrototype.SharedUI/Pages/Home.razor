@@ -5,6 +5,7 @@
 @inject PersistentComponentState ApplicationState
 @inject IFeedService FeedService
 @page "/"
+@page "/{Culture:length(5)}/"
 
 @inject CategoryStateService CategoryState
 @implements IDisposable
@@ -47,6 +48,8 @@
 </div>
 
 @code{
+	[Parameter]
+	public string Culture{ get; set; } = "zh-TW";
 	//接收網址上的 ?tag= 參數
 	[SupplyParameterFromQuery(Name = "tag")]
 	public string? SearchTag { get; set; }

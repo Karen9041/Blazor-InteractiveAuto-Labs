@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Json;
+using TestPrototype.SharedUI.Extensions;
 using TestPrototype.SharedUI.Models;
 
 namespace TestPrototype.SharedUI.Services
@@ -53,7 +54,7 @@ namespace TestPrototype.SharedUI.Services
                 ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
                 if (requiresReload)
                 {
-                    _navigationManager.NavigateTo("/", forceLoad: true);
+                    _navigationManager.NavigateTo(_navigationManager.ToLocalizedPath(), forceLoad: true);
                 }
                 return true;
             }
@@ -94,7 +95,7 @@ namespace TestPrototype.SharedUI.Services
             await _httpClient.PostAsync("api/mock/logout", null);
             await _preferenceService.RemoveVauleAsync("theme");
             await _preferenceService.RemoveVauleAsync(".AspNetCore.Culture");
-            _navigationManager.NavigateTo("/", forceLoad: true);
+            _navigationManager.NavigateTo(_navigationManager.ToLocalizedPath(), forceLoad: true);
             ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();
         }
 

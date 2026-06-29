@@ -1,11 +1,12 @@
 ﻿@inherits LayoutComponentBase
 @using TestPrototype.SharedUI.Components.Common
+@inject NavigationManager NavManager
 
 <nav class="bottom-nav fixed-bottom bg-white border-top w-100 shadow" onclick="document.querySelector('.nav-item').click()">
     <div class="d-flex justify-content-around align-items-center h-100">
         @* 大廳按鈕 *@
 		<div class="nav-item">
-            <NavLink class="nav-link d-flex flex-column align-items-center p-0 gap-1" href="" Match="NavLinkMatch.All">
+            <NavLink class="nav-link d-flex flex-column align-items-center p-0 gap-1" href="@NavManager.ToLocalizedPath()" Match="NavLinkMatch.All">
                 <span class="bi bi-house"  aria-hidden="true"></span>大廳
             </NavLink>
         </div>
@@ -14,7 +15,7 @@
 
         @* 個人按鈕 *@
 		<div class="nav-item">
-            <NavLink class="nav-link d-flex flex-column align-items-center p-0 gap-1" href="/person">
+            <NavLink class="nav-link d-flex flex-column align-items-center p-0 gap-1" href="@NavManager.ToLocalizedPath("/person")">
                 <span class="bi bi-person" aria-hidden="true"></span>個人
             </NavLink>
         </div>

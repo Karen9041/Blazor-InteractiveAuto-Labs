@@ -6,12 +6,12 @@
 <div class="nav-scrollable" onclick="document.querySelector('.nav-item').click()">
     <nav class="flex-column">
         <div class="nav-item">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <NavLink class="nav-link" href="@NavManager.ToLocalizedPath()" Match="NavLinkMatch.All">
                 <span class="bi bi-house" aria-hidden="true"></span> 大廳動態
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link" href="/app-simulator">
+            <NavLink class="nav-link" href="@NavManager.ToLocalizedPath("/app-simulator")">
                 <span class="bi bi-person" aria-hidden="true"></span> APP模擬登入
             </NavLink>
         </div>
@@ -30,6 +30,6 @@
         {
             return;
         }
-        NavManager.NavigateTo("/notifications");
+        NavManager.NavigateToLocalized("/notifications");
 	}
 }

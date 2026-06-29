@@ -23,7 +23,7 @@
             <UserAvatar />
         </div>
         <div class="d-flex flex-grow-1 ms-3">
-                <a href="/login" class="me-0">登入</a>
+                <a href="@NavManager.ToLocalizedPath("/login")" class="me-0">登入</a>
         </div>
         <i class="bi bi-three-dots fs-5 flex-shrink-0"></i>
         </NotAuthorized>
@@ -46,6 +46,6 @@
     {
         await AuthService.LogoutAsync();
         // 登出後把使用者踢回首頁
-        NavManager.NavigateTo("/");
+        NavManager.NavigateToLocalized("/");
 	}
 }
