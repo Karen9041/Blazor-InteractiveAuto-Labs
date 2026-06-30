@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using TestPrototype.SharedUI.Services;
@@ -13,7 +13,7 @@ namespace TestPrototype.SharedUI
             services.AddLocalization();
 
             services.AddScoped<IExploreService, MockExploreService>();
-            services.AddScoped<IFeedService, MockFeedService>();
+            services.AddScoped<IPostApiService, MockPostApiService>();
             services.AddScoped<ICategoryService, MockCategoryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();

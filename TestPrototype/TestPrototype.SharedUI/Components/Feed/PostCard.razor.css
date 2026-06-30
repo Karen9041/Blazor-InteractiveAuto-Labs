@@ -1,4 +1,4 @@
-﻿.post-card-container {
+.post-card-container {
     color: #18181B;
     text-decoration: none;
     cursor:default;
@@ -137,9 +137,11 @@
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.25rem;
+    background-color:inherit;
     color: #a1a1aa;
     gap: 0.375rem;
     cursor: pointer;
+    border: none;
 }
 
 .action-btn-like:hover {

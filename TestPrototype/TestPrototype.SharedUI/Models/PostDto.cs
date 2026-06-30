@@ -1,4 +1,4 @@
-﻿namespace TestPrototype.SharedUI.Models
+namespace TestPrototype.SharedUI.Models
 {
     public class PostDto
     {
@@ -9,6 +9,7 @@
         public string Content { get; set; } = "";
         public string? ImageUrl { get; set; }
         public DateTime PostedTime { get; set; } = DateTime.Now;
+        public bool IsLikedByMe { get; set; } = false;
         public int LikeCount { get; set; } = 0;
         public int CommentCount { get; set; } = 0;
         public string? Category { get; set; }

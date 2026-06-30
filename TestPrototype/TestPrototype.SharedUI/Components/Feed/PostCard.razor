@@ -1,4 +1,4 @@
-﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Models
 @using TestPrototype.SharedUI.Components.Common
 @using TestPrototype.SharedUI.Services
 @using System.Net
@@ -58,16 +58,16 @@
 
         @* 3. Footer: 互動按鈕 *@
         <div class="post-actions d-flex pt-2 mt-2 gap-4">
-            <div class="action-btn action-btn-like d-flex align-items-center" @onclick="ToggleLike">
+			<button class="action-btn action-btn-like d-flex align-items-center" @onclick="ToggleLike">
                 <i class="bi @(isLiked ? "bi-heart-fill like-active" : "bi-heart")"></i>
                 <span class="@(isLiked ? "color-changed" : "")">@(PostData.LikeCount + (isLiked ? 1 : 0))</span>
-            </div>
-            <div class="action-btn action-btn-Comment d-flex align-items-center">
+            </button>
+			<button class="action-btn action-btn-Comment d-flex align-items-center">
                 <i class="bi bi-chat"></i> @PostData.CommentCount
-            </div>
-            <div class="action-btn action-btn-share d-flex align-items-center">
+            </button>
+            <button class="action-btn action-btn-share d-flex align-items-center" @onclick="HandleShare">
                 <i class="bi bi-share"></i> 分享
-            </div>
+            </button>
             <div class="ms-auto">
                 <TipButton />
             </div>
@@ -76,16 +76,24 @@
 </div>
 
 @code {
-    [Parameter] public PostDto PostData { get; set; } = new();
-    private bool isLiked = false;
+	[Parameter] public PostDto PostData { get; set; } = new();
+	private bool isLiked = false;
 
-    private async Task ToggleLike() {
-        if (!await AuthService.RequireLoginAsync())
-        {
-            return;
+	private async Task ToggleLike() {
+		if (!await AuthService.RequireLoginAsync())
+		{
+			return;
 		}
-        isLiked = !isLiked;
-    }
+		isLiked = !isLiked;
+	}
+
+	private async Task HandleShare()
+	{
+		if (!await AuthService.RequireLoginAsync())
+		{
+			return;
+		}
+	}
 
     private void GoToCategory(string category)
     {

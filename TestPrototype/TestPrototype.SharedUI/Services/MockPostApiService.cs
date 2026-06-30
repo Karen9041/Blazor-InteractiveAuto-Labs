@@ -1,7 +1,7 @@
 using TestPrototype.SharedUI.Models;
 using TestPrototype.SharedUI.Services;
 
-public class MockFeedService: IFeedService
+public class MockPostApiService: IPostApiService
 {
     private static List<PostDto> _mockDatabase = new List<PostDto>
     {
@@ -34,7 +34,7 @@ public class MockFeedService: IFeedService
             }
     };
 
-    public async Task<List<PostDto>> GetTimelineAsync()
+    public async Task<List<PostDto>> FetchTimelineAsync()
     {
         await Task.Delay(2000); // 模擬網路傳輸，測試UIState跟Skeleton顯示
 
@@ -43,17 +43,19 @@ public class MockFeedService: IFeedService
 
     public event Action? OnFeedUpdated;
 
-    public async Task PublishPostAsync(PostDto newPost)
+    public async Task<PostDto> CreatePostAsync(PostDto newPost)
     {
         await Task.Delay(500);
-
         newPost.Id = _mockDatabase.Max(p => p.Id) + 1;
-        //newPost.AuthorName = "村民";
-        //newPost.AuthorAvatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzrXltTJxVsrw5CXP5FtJsln0gt6sQMrUR3Q&s";
         _mockDatabase.Insert(0, newPost);
 
-        OnFeedUpdated.Invoke();
+        return newPost; // 回傳新增完成的資料
     }
 
-    public async Task<bool> LikePostAsync(string postId) => await Task.FromResult(true);
+    public async Task<bool> ToggleLikeAsync(string postId)
+    {
+        await Task.Delay(300);
+        // 這裡單純模擬回傳成功，實際專案會依賴 HttpResponseMessage
+        return true;
+    }
 }
