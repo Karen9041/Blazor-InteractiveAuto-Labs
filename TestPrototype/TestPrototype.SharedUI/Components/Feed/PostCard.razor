@@ -5,8 +5,8 @@
 @using System.Text.RegularExpressions
 
 @inject CategoryStateService CategoryState
-@inject IAuthService AuthService
 @inject NavigationManager NavManager
+@inject PostStateService PostState
 
 <div class="post-card-container">
     <article class="post-card card w-100 border-bottom">
@@ -58,9 +58,9 @@
 
         @* 3. Footer: 互動按鈕 *@
         <div class="post-actions d-flex pt-2 mt-2 gap-4">
-			<button class="action-btn action-btn-like d-flex align-items-center" @onclick="ToggleLike">
-                <i class="bi @(isLiked ? "bi-heart-fill like-active" : "bi-heart")"></i>
-                <span class="@(isLiked ? "color-changed" : "")">@(PostData.LikeCount + (isLiked ? 1 : 0))</span>
+			<button class="action-btn action-btn-like d-flex align-items-center" @onclick="HandleLike">
+                <i class="bi @(PostData.IsLikedByMe ? "bi-heart-fill like-active" : "bi-heart")"></i>
+                <span class="@(PostData.IsLikedByMe ? "color-changed" : "")">@(PostData.LikeCount)</span>
             </button>
 			<button class="action-btn action-btn-Comment d-flex align-items-center">
                 <i class="bi bi-chat"></i> @PostData.CommentCount
@@ -77,22 +77,15 @@
 
 @code {
 	[Parameter] public PostDto PostData { get; set; } = new();
-	private bool isLiked = false;
 
-	private async Task ToggleLike() {
-		if (!await AuthService.RequireLoginAsync())
-		{
-			return;
-		}
-		isLiked = !isLiked;
+	private async Task HandleLike()
+	{
+		await PostState.ToggleLikeAsync(PostData.Id);
 	}
 
 	private async Task HandleShare()
 	{
-		if (!await AuthService.RequireLoginAsync())
-		{
-			return;
-		}
+		await PostState.ToggleShareAsync(PostData.Id);
 	}
 
     private void GoToCategory(string category)

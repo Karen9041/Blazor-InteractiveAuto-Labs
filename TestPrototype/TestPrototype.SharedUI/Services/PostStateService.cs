@@ -1,10 +1,10 @@
 namespace TestPrototype.SharedUI.Services;
 using TestPrototype.SharedUI.Models;
 
-    public class PostStateService
-    {
-        private readonly IPostApiService _postApiService;
-        private readonly IAuthService _authService;
+public class PostStateService
+{
+    private readonly IPostApiService _postApiService;
+    private readonly IAuthService _authService;
 
     // 核心功能：維護當前畫面上所有貼文的真實狀態
     public List<PostDto> Posts { get; private set; } = new();
@@ -23,15 +23,30 @@ using TestPrototype.SharedUI.Models;
         NotifyStateChanged();
     }
 
+    public void HydratePosts(List<PostDto>? posts)
+    {
+        Posts = posts ?? new();
+        NotifyStateChanged();
+    }
+
+    public async Task PublishPostAsync(PostDto newPost)
+    {
+        var completedPost = await _postApiService.CreatePostAsync(newPost);
+        Posts.Insert(0, completedPost); //可再優化
+        NotifyStateChanged();
+    }
+
     // 處理按讚、樂觀更新與 Rollback 機制
     public async Task ToggleLikeAsync(string postId)
     {
+        Console.WriteLine($"click like id:{postId}");
         // 檢查權限
         if (!await _authService.RequireLoginAsync()) return;
-
+        Console.WriteLine("auth pass");
         // 對應貼文
         var post = Posts.FirstOrDefault(p => p.Id == postId);
         if (post == null) return;
+        Console.WriteLine("post exist");
 
         //備份原始狀態
         bool originalIsLiked = post.IsLikedByMe;
@@ -66,6 +81,12 @@ using TestPrototype.SharedUI.Models;
             Console.WriteLine($"Like failed, rollbacked. Error: {ex.Message}");
         }
     }
+
+    public async Task ToggleShareAsync(string postId)
+    {
+
+    }
+
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 }

@@ -48,13 +48,21 @@ public class MockPostApiService: IPostApiService
         await Task.Delay(500);
         newPost.Id = _mockDatabase.Max(p => p.Id) + 1;
         _mockDatabase.Insert(0, newPost);
-
         return newPost; // 回傳新增完成的資料
     }
 
     public async Task<bool> ToggleLikeAsync(string postId)
     {
         await Task.Delay(300);
+        var post = _mockDatabase.FirstOrDefault(p => p.Id == postId);
+        if (post == null)
+        {
+            return false;
+        }
+
+        post.IsLikedByMe = !post.IsLikedByMe;
+        post.LikeCount += post.IsLikedByMe ? 1 : -1;
+
         // 這裡單純模擬回傳成功，實際專案會依賴 HttpResponseMessage
         return true;
     }

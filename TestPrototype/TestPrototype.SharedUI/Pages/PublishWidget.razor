@@ -6,9 +6,9 @@
 
 @inject NavigationManager NavManager
 @inject ICategoryService CategoryService
-@inject IPostApiService FeedService
 @inject IAuthService AuthService
 @inject PublishStateService PublishState
+@inject PostStateService PostState
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
@@ -100,112 +100,110 @@
 </div>
 
 @code{
-    private List<CategoryDto>? Categories;
-    private PostDto DraftPost { get; set; } = new PostDto {};
-    // 模擬偵測到的數據 (DTO)
-    private ActivityRecordDto? DetectedActivity;
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
-    // 控制 Toggle 狀態
-    private bool isDataCardEnabled = false;
-    // 當前上傳圖片的預覽網址 (Base64 或 Blob URL)
-    private string? currentBgImageUrl;
-    private IJSObjectReference? module;
+	private List<CategoryDto>? Categories;
+	private PostDto DraftPost { get; set; } = new PostDto {};
+	// 模擬偵測到的數據 (DTO)
+	private ActivityRecordDto? DetectedActivity;
+	[CascadingParameter]
+	private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+	// 控制 Toggle 狀態
+	private bool isDataCardEnabled = false;
+	// 當前上傳圖片的預覽網址 (Base64 或 Blob URL)
+	private string? currentBgImageUrl;
+	private IJSObjectReference? module;
 
-    protected override void OnInitialized()
-    {
-        // 模擬數據偵測
-        DetectedActivity = new ActivityRecordDto
+	protected override void OnInitialized()
+	{
+		// 模擬數據偵測
+		DetectedActivity = new ActivityRecordDto
         {
             Distance = 10.5,
             Duration = new TimeSpan(1,15,0),
             HeartRate = 145,
         };
-    }
+	}
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // 載入 JS 模組
-            try
-            {
-                module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestPrototype.SharedUI/js/publishHelper.js");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"JS載入失敗: {ex.Message}");
-            }
-        }
-    }
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// 載入 JS 模組
+			try
+			{
+				module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestPrototype.SharedUI/js/publishHelper.js");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"JS載入失敗: {ex.Message}");
+			}
+		}
+	}
 
-    private void OnToggleChanged()
-    {
-        if (isDataCardEnabled)
-        {
-            DraftPost.ActivityData = DetectedActivity;
-            if (string.IsNullOrEmpty(currentBgImageUrl))
-            {
-                //預設背景
-                currentBgImageUrl = "https://images.squarespace-cdn.com/content/v1/607f89e638219e13eee71b1e/1684821560422-SD5V37BAG28BURTLIXUQ/michael-sum-LEpfefQf4rU-unsplash.jpg";
-                DraftPost.ImageUrl = currentBgImageUrl;
-            }
-        }
-        else
-        {
-            DraftPost.ActivityData = null;
-            DraftPost.ImageUrl = null;
-            currentBgImageUrl = null;
-        }
-    }
+	private void OnToggleChanged()
+	{
+		if (isDataCardEnabled)
+		{
+			DraftPost.ActivityData = DetectedActivity;
+			if (string.IsNullOrEmpty(currentBgImageUrl))
+			{
+				//預設背景
+				currentBgImageUrl = "https://images.squarespace-cdn.com/content/v1/607f89e638219e13eee71b1e/1684821560422-SD5V37BAG28BURTLIXUQ/michael-sum-LEpfefQf4rU-unsplash.jpg";
+				DraftPost.ImageUrl = currentBgImageUrl;
+			}
+		}
+		else
+		{
+			DraftPost.ActivityData = null;
+			DraftPost.ImageUrl = null;
+			currentBgImageUrl = null;
+		}
+	}
 
-    private async Task TriggerUpload()
-    {
-        if (module != null)
-        {
-            await module.InvokeVoidAsync("clickElement", "imageUploader");
-        }
-    }
+	private async Task TriggerUpload()
+	{
+		if (module != null)
+		{
+			await module.InvokeVoidAsync("clickElement", "imageUploader");
+		}
+	}
 
-    protected override async Task OnInitializedAsync()
-    {
-        await ResetForm();
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		await ResetForm();
+	}
 
-    private async Task LoadFile(InputFileChangeEventArgs e)
-    {
-        var imageFile = e.File;
-        if (imageFile != null)
-        {
-            // 限制大小 (例如 max 5MB)
-            var resizedImage = await imageFile.RequestImageFileAsync("image/png", 800, 800);
+	private async Task LoadFile(InputFileChangeEventArgs e)
+	{
+		var imageFile = e.File;
+		if (imageFile != null)
+		{
+			// 限制大小 (例如 max 5MB)
+			var resizedImage = await imageFile.RequestImageFileAsync("image/png", 800, 800);
 
-            using var stream = resizedImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
+			using var stream = resizedImage.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+			using var ms = new MemoryStream();
+			await stream.CopyToAsync(ms);
 
-            // 產生 Base64 預覽網址
-            currentBgImageUrl = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+			// 產生 Base64 預覽網址
+			currentBgImageUrl = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
 
-            // 將結果儲存到待發布的貼文中
-            DraftPost.ImageUrl = currentBgImageUrl;
+			// 將結果儲存到待發布的貼文中
+			DraftPost.ImageUrl = currentBgImageUrl;
 
-            StateHasChanged(); // 強制刷新畫面
-        }
-    }
+			StateHasChanged(); // 強制刷新畫面
+		}
+	}
 
-    private async Task Publish()
-    {
-        try
-        {
-            var authState = await AuthStateTask;
-            var user = authState.User;
-
-            DraftPost.AuthorName = user.Identity.Name!;
-            DraftPost.AuthorAvatarUrl = user.FindFirst("avatar")?.Value ?? "";
-
-            await FeedService.PublishPostAsync(DraftPost);
-            await ResetForm();
+	private async Task Publish()
+	{
+		try
+		{
+			var authState = await AuthStateTask;
+			var user = authState.User;
+			DraftPost.AuthorName = user.Identity.Name!;
+			DraftPost.AuthorAvatarUrl = user.FindFirst("avatar")?.Value ?? "";
+			await PostState.PublishPostAsync(DraftPost);
+			await ResetForm();
             PublishState.Close();
         }
         catch

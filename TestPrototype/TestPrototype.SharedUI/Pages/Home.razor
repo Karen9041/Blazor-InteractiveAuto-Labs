@@ -3,12 +3,12 @@
 @using TestPrototype.SharedUI.Services
 @inject NavigationManager NavManager
 @inject PersistentComponentState ApplicationState
-@inject IPostApiService FeedService
+@inject CategoryStateService CategoryState
+@inject PostStateService PostState
+@implements IDisposable
 @page "/"
 @page "/{Culture:length(5)}/"
 
-@inject CategoryStateService CategoryState
-@implements IDisposable
 
 <div class="home-container d-flex flex-column">
 	<div class="category-container d-flex" style="height:63px">
@@ -54,7 +54,6 @@
 	[SupplyParameterFromQuery(Name = "tag")]
 	public string? SearchTag { get; set; }
 	private UIState _currentState = UIState.Loading;
-	private List<PostDto>? _allPosts = new();
 	private PersistingComponentStateSubscription _subscription;
 
 	protected override async Task OnInitializedAsync()
@@ -63,18 +62,20 @@
 		_subscription = ApplicationState.RegisterOnPersisting(PersistData);
 
 		CategoryState.OnChange += HandleCategoryChanged;
-		FeedService.OnFeedUpdated += RefreshFeed;
+		PostState.OnChange += HandlePostStateChanged;
 
 		//是不是被 WASM 喚醒的？有沒有 SSR 留下來的遺產？
 		if (ApplicationState.TryTakeFromJson<List<PostDto>>("feed_data", out var restored))
 		{
 			// 有遺產 直接沿用，不要打 API，也不要顯示骨架屏
-			_allPosts = restored!;
-			_currentState = UIState.Success;
+			PostState.HydratePosts(restored);
+			UpdateStateFromPosts();
+			Console.WriteLine($"SSR遺產數：{PostState.Posts.Count}");
 		}
 		else
 		{
 			await LoadDataAsync();
+			Console.WriteLine($"LoadData數：{PostState.Posts.Count}");
 		}
 	}
 
@@ -82,17 +83,9 @@
 	{
 		try
 		{
-			_allPosts = await FeedService.GetTimelineAsync();
-			if (_allPosts.Count == 0)
-			{
-				_currentState = UIState.Empty;
-				StateHasChanged();
-			}
-			else
-			{
-				_currentState = UIState.Success;
-				StateHasChanged();
-			}
+			await PostState.LoadTimeLineAsync();
+			UpdateStateFromPosts();
+			StateHasChanged();
 		}
 		catch
 		{
@@ -100,16 +93,22 @@
 		}
 	}
 
-	private async void RefreshFeed()
+	private void HandlePostStateChanged()
 	{
-		await LoadDataAsync();
+		UpdateStateFromPosts();
+		StateHasChanged();
+	}
+
+	private void UpdateStateFromPosts()
+	{
+		_currentState = PostState.Posts.Count == 0 ? UIState.Empty : UIState.Success;
 	}
 
 	private IEnumerable<PostDto> FilteredPosts
 	{
 		get
 		{
-			var posts = _allPosts.AsEnumerable();
+			var posts = PostState.Posts.AsEnumerable();
 
 			// 如果有帶 tag 參數，就把符合該 tag 的貼文「排在最前面」(置頂)
 			if (!string.IsNullOrEmpty(SearchTag))
@@ -134,14 +133,14 @@
 	private Task PersistData()
 	{
 		// 將目前的貼文清單打包成 JSON 塞進 HTML 中
-		ApplicationState.PersistAsJson("feed_data", _allPosts);
+		ApplicationState.PersistAsJson("feed_data", PostState.Posts);
 		return Task.CompletedTask;
 	}
 
     public void Dispose()
     {
         CategoryState.OnChange -= HandleCategoryChanged;
-        FeedService.OnFeedUpdated -= RefreshFeed;
+		PostState.OnChange -= HandlePostStateChanged;
 		_subscription.Dispose();
     }
 }
