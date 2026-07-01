@@ -44,6 +44,13 @@ public class MockPostApiService: IPostApiService
 
     public event Action? OnFeedUpdated;
 
+    public async Task<PostDto?> FetchPostByIdAsync(string postId)
+    {
+        await Task.Delay(300);
+        var post = _mockDatabase.FirstOrDefault(p => p.Id == postId);
+        return post;
+    }
+
     public async Task<PostDto> CreatePostAsync(PostDto newPost)
     {
         await Task.Delay(500);
@@ -73,7 +80,6 @@ public class MockPostApiService: IPostApiService
         await Task.Delay(300);
         // 在真實環境中，這裡會是帶有 Auth Token 的 HttpClient 請求
         // 模擬回傳後端產生的專屬短網址
-        //return $"https://localhost:7288/post/{postId}";
-        return "https://localhost:7288/";
+        return $"https://localhost:7288/post/{postId}";
     }
 }
