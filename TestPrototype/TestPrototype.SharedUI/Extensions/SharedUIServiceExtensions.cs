@@ -16,6 +16,7 @@ namespace TestPrototype.SharedUI
             services.AddScoped<IPostApiService, MockPostApiService>();
             services.AddScoped<ICategoryService, MockCategoryService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IBrowserShareService, BrowserShareService>();
             services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
             services.AddScoped<LoginModalService>();
             services.AddScoped<ConflictModalService>();

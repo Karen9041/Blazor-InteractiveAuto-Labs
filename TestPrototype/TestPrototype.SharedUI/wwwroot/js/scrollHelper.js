@@ -1,15 +1,13 @@
 export function enableHorizontalScroll(el) {
     if (el) {
-        console.log("¦¨¥\¸j©w¾î¦V±²°Ê¤¸¯À:"); // °£¿ù¥Î
-
         el.addEventListener('wheel', (evt) => {
-            // ¥u­n¤£¬O§¹¥şªº¾î¦Vºu°Ê¡A§Ú­Ì´NÄdºI¥¦
+            // åªè¦ä¸æ˜¯å®Œå…¨çš„æ©«å‘æ»¾å‹•ï¼Œæˆ‘å€‘å°±æ””æˆªå®ƒ
             if (evt.deltaY !== 0) {
-                evt.preventDefault(); // ªı¤î­ì¥»ªº¤W¤Uºu°Ê
-                el.scrollLeft += (evt.deltaY*0.2); // Âà´«¦¨¥ª¥kºu°Ê
+                evt.preventDefault(); // é˜»æ­¢åŸæœ¬çš„ä¸Šä¸‹æ»¾å‹•
+                el.scrollLeft += (evt.deltaY*0.2); // è½‰æ›æˆå·¦å³æ»¾å‹•
             }
         }, { passive: false });
     } else {
-        console.warn("§ä¤£¨ì¤¸¯À ID:", el);
+        console.warn("element not found:", el);
     }
 }

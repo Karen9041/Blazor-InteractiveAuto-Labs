@@ -12,5 +12,6 @@ namespace TestPrototype.SharedUI.Services
         Task<PostDto> CreatePostAsync(PostDto newPost);
 
         Task<bool> ToggleLikeAsync(string postId);
+        Task<string> ExecuteShareAsync(string postId);
     }
 }

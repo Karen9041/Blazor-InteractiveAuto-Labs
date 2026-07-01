@@ -5,16 +5,18 @@ public class PostStateService
 {
     private readonly IPostApiService _postApiService;
     private readonly IAuthService _authService;
+    private readonly IBrowserShareService _browserShareService;
 
     // 核心功能：維護當前畫面上所有貼文的真實狀態
     public List<PostDto> Posts { get; private set; } = new();
 
     public event Action? OnChange;
 
-    public PostStateService ( IPostApiService postApiService, IAuthService authService)
+    public PostStateService ( IPostApiService postApiService, IAuthService authService, IBrowserShareService browserShareService)
     {
         _postApiService = postApiService;
         _authService = authService;
+        _browserShareService = browserShareService;
     }
 
     public async Task LoadTimeLineAsync()
@@ -39,14 +41,11 @@ public class PostStateService
     // 處理按讚、樂觀更新與 Rollback 機制
     public async Task ToggleLikeAsync(string postId)
     {
-        Console.WriteLine($"click like id:{postId}");
         // 檢查權限
         if (!await _authService.RequireLoginAsync()) return;
-        Console.WriteLine("auth pass");
         // 對應貼文
         var post = Posts.FirstOrDefault(p => p.Id == postId);
         if (post == null) return;
-        Console.WriteLine("post exist");
 
         //備份原始狀態
         bool originalIsLiked = post.IsLikedByMe;
@@ -84,7 +83,49 @@ public class PostStateService
 
     public async Task ToggleShareAsync(string postId)
     {
+        var post = Posts.FirstOrDefault(p => p.Id == postId);
+        if (post == null) return;
 
+        try
+        {
+            // 1. (選擇性) 如果分享需要登入才能產生追蹤連結，可在此攔截
+            // await _authService.RequireLoginAsync();
+
+            string shareLink = await _postApiService.ExecuteShareAsync(postId);
+            string shareTitle = $"{post.AuthorName} 的動態";
+            string shareText = "來看看這篇有趣的貼文！";
+
+            bool nativeShareResult = await _browserShareService.ShareAsync(shareTitle, shareText, shareLink);
+
+            if (nativeShareResult)
+            {
+                // 假設 PostDto 有 ShareCount 屬性
+                // post.ShareCount++; 
+                NotifyStateChanged();
+                return;
+            }
+
+            //降級方案：如果原生分享失敗，嘗試複製到剪貼簿
+            bool copySuccess = await _browserShareService.CopyToClipboardAsync(shareLink);
+
+            if (copySuccess)
+            {
+                Console.WriteLine("已降級為複製連結，成功複製到剪貼簿。");
+                // _notificationState.ShowInfo("連結已複製到剪貼簿");
+            }
+            else
+            {
+                Console.WriteLine("分享與複製皆失敗。");
+                // _notificationState.ShowError("無法分享貼文，請檢查瀏覽器權限。");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            // 錯誤處理：API 失敗或 JSInterop 例外
+            Console.WriteLine($"Share process error: {ex.Message}");
+            // 可以在這裡廣播 Error 狀態，讓 UI 顯示 Toast
+        }
     }
 
 

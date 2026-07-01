@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using TestPrototype.SharedUI.Models;
 using TestPrototype.SharedUI.Services;
 
@@ -65,5 +66,14 @@ public class MockPostApiService: IPostApiService
 
         // 這裡單純模擬回傳成功，實際專案會依賴 HttpResponseMessage
         return true;
+    }
+
+    public async Task<string> ExecuteShareAsync(string postId)
+    {
+        await Task.Delay(300);
+        // 在真實環境中，這裡會是帶有 Auth Token 的 HttpClient 請求
+        // 模擬回傳後端產生的專屬短網址
+        //return $"https://localhost:7288/post/{postId}";
+        return "https://localhost:7288/";
     }
 }
