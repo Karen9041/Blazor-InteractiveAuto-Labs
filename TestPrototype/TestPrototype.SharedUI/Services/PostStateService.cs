@@ -25,6 +25,12 @@ public class PostStateService
         NotifyStateChanged();
     }
 
+    public async Task<PostDto?> LoadPostByIdAsync(string postId)
+    {
+        var post = await _postApiService.FetchPostByIdAsync(postId);
+        return post;
+    }
+
     public void HydratePosts(List<PostDto>? posts)
     {
         Posts = posts ?? new();
