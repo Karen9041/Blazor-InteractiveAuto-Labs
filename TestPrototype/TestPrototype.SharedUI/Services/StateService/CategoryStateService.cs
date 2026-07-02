@@ -1,17 +1,24 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using TestPrototype.SharedUI.Enums;
 using TestPrototype.SharedUI.Models;
 
 namespace TestPrototype.SharedUI.Services;
 
 public class CategoryStateService: IDisposable
 {
+    private const string AllCategoryName = "綜合大廳";
     private readonly ICategoryService _categoryService;
     private readonly PersistentComponentState _applicationState;
     private readonly PersistingComponentStateSubscription _subscription;
+    private bool _hasHydrated;
 
+    public UIState CurrentUIState { get; private set; } = UIState.Loading;
     public List<CategoryDto> Categories { get; private set; } = new();
-    public string SelectedCategory { get; private set; } = "綜合大廳";
+    public IReadOnlyList<CategoryDto> PublishCategories => Categories
+        .Where(c => c.Name != AllCategoryName)
+        .ToList();
+    public string SelectedCategory { get; private set; } = AllCategoryName;
 
     public event Action? OnChange;
 
@@ -26,16 +33,48 @@ public class CategoryStateService: IDisposable
         // 啟動時檢查：是否有 SSR 遺產？
         if (_applicationState.TryTakeFromJson<List<CategoryDto>>("category_data", out var restored))
         {
-            Categories = restored!;
+            HydrateCategory(restored);
+            _hasHydrated = true;
         }
     }
 
-    public async Task EnsureCategoriesLoadedAsync()
+    public async Task EnsureInitialCategoriesLoadedAsync()
     {
-        // 如果已經有資料（來自 SSR 遺產或剛剛抓過），瞬間回傳
-        if (Categories.Any()) return;
+        if (_hasHydrated)
+        {
+            _hasHydrated = false;
+            return;
+        }
 
-        Categories = await _categoryService.GetCategoriesAsync();
+        await LoadCategoriesAsync();
+    }
+
+    public async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            CurrentUIState = UIState.Loading;
+            NotifyStateChanged();
+
+            Categories = await _categoryService.GetCategoriesAsync();
+            CurrentUIState = Categories.Count == 0 ? UIState.Empty : UIState.Success;
+        }
+        catch(Exception ex)
+        {
+            CurrentUIState = UIState.Error;
+            Console.WriteLine($"載入分類失敗: {ex.Message}");
+        }
+        finally
+        {
+            NotifyStateChanged();
+        }
+
+    }
+
+    public void HydrateCategory(List<CategoryDto>? categories)
+    {
+        Categories = categories ?? new();
+        CurrentUIState = Categories.Count == 0 ? UIState.Empty : UIState.Success;
         NotifyStateChanged();
     }
 

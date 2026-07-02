@@ -1,4 +1,4 @@
-﻿namespace TestPrototype.SharedUI.Services
+namespace TestPrototype.SharedUI.Services.ModalService
 {
     public class LoginModalService
     {

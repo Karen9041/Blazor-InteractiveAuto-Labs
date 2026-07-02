@@ -1,4 +1,4 @@
-﻿namespace TestPrototype.SharedUI.Services;
+namespace TestPrototype.SharedUI.Services.StateService;
 public class PublishStateService
 {
     public bool IsOpen { get; private set; }
