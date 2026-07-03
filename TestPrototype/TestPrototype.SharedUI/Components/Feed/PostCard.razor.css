@@ -165,3 +165,14 @@
 .action-btn-share:hover {
     color: #059669 !important;
 }
+
+/* 隱形全螢幕遮罩 */
+.share-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99; /* 必須小於彈窗的 z-index (100) */
+    cursor: default;
+}

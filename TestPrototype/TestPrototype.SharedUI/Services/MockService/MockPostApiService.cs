@@ -37,7 +37,7 @@ public class MockPostApiService: IPostApiService
 
     public async Task<List<PostDto>> FetchTimelineAsync()
     {
-        await Task.Delay(3000); // 模擬網路傳輸，測試UIState跟Skeleton顯示
+        await Task.Delay(500); // 模擬網路傳輸，測試UIState跟Skeleton顯示
 
         return _mockDatabase
             .OrderByDescending(p => p.Id)
@@ -56,7 +56,7 @@ public class MockPostApiService: IPostApiService
 
     public async Task<PostDto> CreatePostAsync(PostDto newPost)
     {
-        await Task.Delay(500);
+        await Task.Delay(300);
         var completedPost = ClonePost(newPost);
         var maxId = _mockDatabase.Max(p => int.Parse(p.Id));
         completedPost.Id = (maxId + 1).ToString();
