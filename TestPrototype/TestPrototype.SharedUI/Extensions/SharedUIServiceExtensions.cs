@@ -20,6 +20,7 @@ namespace TestPrototype.SharedUI
             services.AddScoped<ICategoryService, MockCategoryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBrowserShareService, BrowserShareService>();
+            services.AddScoped<IImageService, HttpImageService>();
             services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
             services.AddScoped<LoginModalService>();
             services.AddScoped<ConflictModalService>();

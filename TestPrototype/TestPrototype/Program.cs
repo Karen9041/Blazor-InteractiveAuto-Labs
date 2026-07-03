@@ -1,5 +1,6 @@
 using TestPrototype.Components;
 using TestPrototype.Extensions;
+using TestPrototype.Services;
 using TestPrototype.SharedUI;
 using TestPrototype.SharedUI.Services;
 
@@ -20,6 +21,8 @@ builder.Services.AddHttpClient("BffClient", client =>
 .AddHttpMessageHandler<ServerCookieHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BffClient"));
+builder.Services.AddHttpClient("ImageFetchClient");
+builder.Services.AddScoped<SkiaSharpImageService>();
 builder.Services.AddScoped<IPreferenceService, ServerPreferenceService>();
 builder.Services.AddAntiforgery(options =>
 {
@@ -54,5 +57,6 @@ app.MapRazorComponents<App>()
         typeof(TestPrototype.SharedUI.Pages.Home).Assembly);
 
 app.MapMockApiEndpoints();
+app.MapImageEndpoints();
 
 app.Run();

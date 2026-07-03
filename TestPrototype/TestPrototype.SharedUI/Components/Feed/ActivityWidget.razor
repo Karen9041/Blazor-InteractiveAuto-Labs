@@ -1,4 +1,4 @@
-﻿@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Models
 
 <div class="activity-wrapper border">
 	@if ( ImageUrl != null)
@@ -38,10 +38,12 @@
 
 	[Parameter] public bool IsPreviewMode { get; set; } = false;
 
-	public string Time;
+	public string Time = "";
 
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
-		 Time = $"{(int)ActivityData.Duration.TotalHours}H {ActivityData.Duration.Minutes}M";
+		Time = ActivityData is null
+			? ""
+			: $"{(int)ActivityData.Duration.TotalHours}H {ActivityData.Duration.Minutes}M";
 	}
 }

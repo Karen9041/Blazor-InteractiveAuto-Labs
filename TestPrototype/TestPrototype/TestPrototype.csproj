@@ -9,6 +9,7 @@
     <ProjectReference Include="..\TestPrototype.Client\TestPrototype.Client.csproj" />
     <ProjectReference Include="..\TestPrototype.SharedUI\TestPrototype.SharedUI.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.25" />
+    <PackageReference Include="SkiaSharp" Version="4.148.0" />
   </ItemGroup>
 
 </Project>

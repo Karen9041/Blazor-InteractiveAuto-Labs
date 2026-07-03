@@ -8,6 +8,7 @@
 @inject NavigationManager NavManager
 @inject CategoryStateService CategoryState
 @inject IAuthService AuthService
+@inject IImageService ImageService
 @inject PublishStateService PublishState
 @inject PostStateService PostState
 @inject IJSRuntime JS
@@ -226,8 +227,9 @@
 		{
 			var authState = await AuthStateTask;
 			var user = authState.User;
-			DraftPost.AuthorName = user.Identity.Name!;
+			DraftPost.AuthorName = user.Identity?.Name ?? "";
 			DraftPost.AuthorAvatarUrl = user.FindFirst("avatar")?.Value ?? "";
+			await ComposeActivityImageIfNeededAsync();
 			await PostState.PublishPostAsync(DraftPost);
 			await ResetForm();
             PublishState.Close();
@@ -237,6 +239,23 @@
             
         }
     }
+
+	private async Task ComposeActivityImageIfNeededAsync()
+	{
+		if (!isDataCardEnabled || DetectedActivity is null || string.IsNullOrWhiteSpace(currentBgImageUrl))
+		{
+			return;
+		}
+
+		var result = await ImageService.ComposePostImageAsync(new PostImageComposeRequestDto
+		{
+			BackgroundImageUrl = currentBgImageUrl,
+			ActivityData = DetectedActivity
+		});
+
+		DraftPost.ImageUrl = result.ImageUrl;
+		DraftPost.ActivityData = null;
+	}
 
     private async Task ResetForm()
     {
