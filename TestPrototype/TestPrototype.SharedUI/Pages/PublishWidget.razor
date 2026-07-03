@@ -1,11 +1,12 @@
-@using TestPrototype.SharedUI.Models
-@using TestPrototype.SharedUI.Services
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
-@using System.Security.Claims
+@using TestPrototype.SharedUI.Models
+@using TestPrototype.SharedUI.Services
+@using TestPrototype.SharedUI.Services.StateService
 
 @inject NavigationManager NavManager
-@inject ICategoryService CategoryService
+@inject CategoryStateService CategoryState
 @inject IAuthService AuthService
 @inject PublishStateService PublishState
 @inject PostStateService PostState
@@ -111,9 +112,13 @@
 	// 當前上傳圖片的預覽網址 (Base64 或 Blob URL)
 	private string? currentBgImageUrl;
 	private IJSObjectReference? module;
+	private bool _wasOpen;
+	private bool _hasPreparedForCurrentOpen;
 
 	protected override void OnInitialized()
 	{
+		PublishState.OnChange += HandlePublishStateChanged;
+
 		// 模擬數據偵測
 		DetectedActivity = new ActivityRecordDto
         {
@@ -167,9 +172,30 @@
 		}
 	}
 
-	protected override async Task OnInitializedAsync()
+	private async void HandlePublishStateChanged()
 	{
-		await ResetForm();
+		try
+		{
+			if (PublishState.IsOpen)
+			{
+				if (!_wasOpen || !_hasPreparedForCurrentOpen)
+				{
+					_wasOpen = true;
+					_hasPreparedForCurrentOpen = true;
+					await ResetForm();
+					await InvokeAsync(StateHasChanged);
+				}
+			}
+			else
+			{
+				_wasOpen = false;
+				_hasPreparedForCurrentOpen = false;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Publish form initialization failed: {ex.Message}");
+		}
 	}
 
 	private async Task LoadFile(InputFileChangeEventArgs e)
@@ -214,8 +240,8 @@
 
     private async Task ResetForm()
     {
-        var allCategories = await CategoryService.GetCategoriesAsync();
-        Categories = allCategories.Where(c => c.Name != "綜合大廳").ToList();
+        await CategoryState.EnsureInitialCategoriesLoadedAsync();
+        Categories = CategoryState.PublishCategories.ToList();
         DraftPost = new PostDto();
 
         if (Categories.Any())
@@ -228,6 +254,8 @@
 
     public async ValueTask DisposeAsync()
     {
+		PublishState.OnChange -= HandlePublishStateChanged;
+
         if (module != null)
         {
             try { await module.DisposeAsync(); } catch { }

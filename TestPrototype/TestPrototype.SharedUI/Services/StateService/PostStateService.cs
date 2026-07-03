@@ -1,28 +1,74 @@
-namespace TestPrototype.SharedUI.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using TestPrototype.SharedUI.Enums;
 using TestPrototype.SharedUI.Models;
 
-public class PostStateService
+namespace TestPrototype.SharedUI.Services.StateService;
+
+public class PostStateService : IDisposable
 {
     private readonly IPostApiService _postApiService;
     private readonly IAuthService _authService;
     private readonly IBrowserShareService _browserShareService;
+    private readonly PersistentComponentState _applicationState;
+    private readonly PersistingComponentStateSubscription _subscription;
+    private bool _hasHydrated;
 
     // 核心功能：維護當前畫面上所有貼文的真實狀態
     public List<PostDto> Posts { get; private set; } = new();
+    public UIState CurrentUIState { get; private set; } = UIState.Loading;
 
     public event Action? OnChange;
 
-    public PostStateService ( IPostApiService postApiService, IAuthService authService, IBrowserShareService browserShareService)
+    public PostStateService(
+        IPostApiService postApiService,
+        IAuthService authService,
+        IBrowserShareService browserShareService,
+        PersistentComponentState applicationState)
     {
         _postApiService = postApiService;
         _authService = authService;
         _browserShareService = browserShareService;
+        _applicationState = applicationState;
+        _subscription = _applicationState.RegisterOnPersisting(PersistData, RenderMode.InteractiveAuto);
+
+        if (_applicationState.TryTakeFromJson<List<PostDto>>("feed_data", out var restored))
+        {
+            HydratePosts(restored);
+            _hasHydrated = true;
+        }
+    }
+
+    public async Task EnsureInitialTimelineLoadedAsync()
+    {
+        if (_hasHydrated)
+        {
+            _hasHydrated = false;
+            return;
+        }
+
+        await LoadTimeLineAsync();
     }
 
     public async Task LoadTimeLineAsync()
     {
-        Posts = await _postApiService.FetchTimelineAsync();
-        NotifyStateChanged();
+        try
+        {
+            CurrentUIState = UIState.Loading;
+            NotifyStateChanged();
+
+            Posts = await _postApiService.FetchTimelineAsync();
+            CurrentUIState = Posts.Count == 0 ? UIState.Empty : UIState.Success;
+        }
+        catch (Exception ex)
+        {
+            CurrentUIState = UIState.Error;
+            Console.WriteLine($"Timeline load failed: {ex.Message}");
+        }
+        finally
+        {
+            NotifyStateChanged();
+        }
     }
 
     public async Task<PostDto?> LoadPostByIdAsync(string postId)
@@ -34,6 +80,7 @@ public class PostStateService
     public void HydratePosts(List<PostDto>? posts)
     {
         Posts = posts ?? new();
+        CurrentUIState = Posts.Count == 0 ? UIState.Empty : UIState.Success;
         NotifyStateChanged();
     }
 
@@ -41,6 +88,7 @@ public class PostStateService
     {
         var completedPost = await _postApiService.CreatePostAsync(newPost);
         Posts.Insert(0, completedPost); //可再優化
+        CurrentUIState = UIState.Success;
         NotifyStateChanged();
     }
 
@@ -134,6 +182,19 @@ public class PostStateService
         }
     }
 
+    private Task PersistData()
+    {
+        if (Posts.Any())
+        {
+            _applicationState.PersistAsJson("feed_data", Posts);
+        }
+        return Task.CompletedTask;
+    }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    public void Dispose()
+    {
+        _subscription.Dispose();
+    }
 }

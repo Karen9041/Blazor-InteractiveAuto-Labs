@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Json;
 using TestPrototype.SharedUI.Extensions;
 using TestPrototype.SharedUI.Models;
+using TestPrototype.SharedUI.Services.ModalService;
 
 namespace TestPrototype.SharedUI.Services
 {

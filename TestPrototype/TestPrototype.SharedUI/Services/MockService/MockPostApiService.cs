@@ -37,9 +37,12 @@ public class MockPostApiService: IPostApiService
 
     public async Task<List<PostDto>> FetchTimelineAsync()
     {
-        await Task.Delay(2000); // 模擬網路傳輸，測試UIState跟Skeleton顯示
+        await Task.Delay(3000); // 模擬網路傳輸，測試UIState跟Skeleton顯示
 
-        return _mockDatabase.OrderByDescending(p => p.Id).ToList(); ;
+        return _mockDatabase
+            .OrderByDescending(p => p.Id)
+            .Select(ClonePost)
+            .ToList();
     }
 
     public event Action? OnFeedUpdated;
@@ -48,15 +51,17 @@ public class MockPostApiService: IPostApiService
     {
         await Task.Delay(300);
         var post = _mockDatabase.FirstOrDefault(p => p.Id == postId);
-        return post;
+        return post is null ? null : ClonePost(post);
     }
 
     public async Task<PostDto> CreatePostAsync(PostDto newPost)
     {
         await Task.Delay(500);
-        newPost.Id = _mockDatabase.Max(p => p.Id) + 1;
-        _mockDatabase.Insert(0, newPost);
-        return newPost; // 回傳新增完成的資料
+        var completedPost = ClonePost(newPost);
+        var maxId = _mockDatabase.Max(p => int.Parse(p.Id));
+        completedPost.Id = (maxId + 1).ToString();
+        _mockDatabase.Insert(0, completedPost);
+        return ClonePost(completedPost); // 回傳新增完成的資料
     }
 
     public async Task<bool> ToggleLikeAsync(string postId)
@@ -81,5 +86,35 @@ public class MockPostApiService: IPostApiService
         // 在真實環境中，這裡會是帶有 Auth Token 的 HttpClient 請求
         // 模擬回傳後端產生的專屬短網址
         return $"https://localhost:7288/post/{postId}";
+    }
+
+    private static PostDto ClonePost(PostDto post)
+    {
+        return new PostDto
+        {
+            Id = post.Id,
+            AuthorName = post.AuthorName,
+            AuthorHandle = post.AuthorHandle,
+            AuthorAvatarUrl = post.AuthorAvatarUrl,
+            Content = post.Content,
+            ImageUrl = post.ImageUrl,
+            PostedTime = post.PostedTime,
+            IsLikedByMe = post.IsLikedByMe,
+            LikeCount = post.LikeCount,
+            CommentCount = post.CommentCount,
+            Category = post.Category,
+            MembershipRole = post.MembershipRole,
+            Achievements = post.Achievements.ToList(),
+            AuthorHasNewUpdate = post.AuthorHasNewUpdate,
+            ActivityData = post.ActivityData is null
+                ? null
+                : new ActivityRecordDto
+                {
+                    Type = post.ActivityData.Type,
+                    Distance = post.ActivityData.Distance,
+                    Duration = post.ActivityData.Duration,
+                    HeartRate = post.ActivityData.HeartRate
+                }
+        };
     }
 }

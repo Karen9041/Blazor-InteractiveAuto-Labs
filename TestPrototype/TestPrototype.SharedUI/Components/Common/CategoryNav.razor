@@ -7,59 +7,41 @@
 @implements IDisposable
 @implements IAsyncDisposable
 
-@if (!CategoryState.Categories.Any())
-{
-	@*骨架屏佔位 *@
-	<div class="category-container border-bottom w-100 sticky-top d-flex gap-2 p-2 placeholder-glow" style="min-height: 57px;">
-		<span class="placeholder col-2 rounded btn-sm"></span>
-		<span class="placeholder col-2 rounded btn-sm"></span>
-		<span class="placeholder col-2 rounded btn-sm"></span>
-	</div>
-}
-else
-{
-	<div @ref="scrollAreaRef" class="category-container border-bottom w-100 sticky-top d-flex gap-2 hide-scrollbar">
-		@foreach (var category in CategoryState.Categories)
-		{
-			<button class="btn text-nowrap @(IsActive(category.Name) ? "active" : "")" @onclick="() => SelectCategory(category.Name)">
-				@category.Emoji @category.Name
-			</button>
-		}
-	</div>
-}
+<div @ref="scrollAreaRef" class="category-container border-bottom w-100 sticky-top d-flex gap-2 hide-scrollbar">
+	@foreach (var category in CategoryState.Categories)
+	{
+		<button class="btn text-nowrap @(IsActive(category.Name) ? "active" : "")" @onclick="() => SelectCategory(category.Name)">
+			@category.Emoji @category.Name
+		</button>
+	}
+</div>
 
 @code {
 	private IJSObjectReference? module;
 	private ElementReference scrollAreaRef;
 
-	private List<CategoryDto>? Categories;
+	private bool IsActive(string? categoryName) => CategoryState.SelectedCategory == categoryName;
 
-	private bool IsActive(string categoryName) => CategoryState.SelectedCategory == categoryName;
-
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		CategoryState.OnChange += StateHasChanged;
-		// SSR 遺產
-		await CategoryState.EnsureCategoriesLoadedAsync();
 	}
 
-	private void SelectCategory(string category)
+	private void SelectCategory(string? category)
 	{
-		CategoryState.SelectCategory(category);
+		if (!string.IsNullOrWhiteSpace(category))
+		{
+			CategoryState.SelectCategory(category);
+		}
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			// 1. 動態載入我們寫在 wwwroot 裡的 JS 檔案
 			module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/TestPrototype.SharedUI/js/scrollHelper.js");
-
-			// 2. 呼叫檔案裡面的 enableHorizontalScroll 方法
-			if (module != null)
-			{
-				await module.InvokeVoidAsync("enableHorizontalScroll", scrollAreaRef);
-			}
+			await JS.InvokeVoidAsync("console.log", "這是抓到的元素：", scrollAreaRef);
+			await module.InvokeVoidAsync("enableHorizontalScroll", scrollAreaRef);
 		}
 	}
 

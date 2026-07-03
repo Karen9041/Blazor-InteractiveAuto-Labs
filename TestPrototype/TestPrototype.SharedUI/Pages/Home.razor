@@ -1,8 +1,8 @@
 @using TestPrototype.SharedUI.Components.Common
 @using TestPrototype.SharedUI.Models
 @using TestPrototype.SharedUI.Services
+@using TestPrototype.SharedUI.Services.StateService
 @inject NavigationManager NavManager
-@inject PersistentComponentState ApplicationState
 @inject CategoryStateService CategoryState
 @inject PostStateService PostState
 @implements IDisposable
@@ -12,10 +12,24 @@
 
 <div class="home-container d-flex flex-column">
 	<div class="category-container d-flex" style="height:63px">
-		<CategoryNav />
-	</div>
+		<StateBoundary State="@CategoryState.CurrentUIState">
+			<LoadingContent>
+				<CategoryNavSkelenton />
+			</LoadingContent>
+			<EmptyContent>
+				<div class="text-muted small ms-3">目前尚無分類</div>
+			</EmptyContent>
+			<ErrorContent>
+				<span>⚠️ 載入失敗</span>
+				<i class="bi bi-arrow-clockwise" style="cursor: pointer;" @onclick="CategoryState.LoadCategoriesAsync"></i>
+			</ErrorContent>
+			<ChildContent>
+				<CategoryNav />
+			</ChildContent>
+		</StateBoundary>
+    </div>
     <div class="post-container d-flex flex-column justify-content-center gap-4 w-100 ">
-		<StateBoundary State="@_currentState">
+		<StateBoundary State="@PostState.CurrentUIState">
 			<LoadingContent>
 				@for(int i = 0; i < 3; i++)
 				{
@@ -26,7 +40,7 @@
 				<div>目前沒有貼文，去發一篇吧！</div>
 			</EmptyContent>
 			<ErrorContent>
-				<div>糟糕，載入失敗。 <button @onclick="LoadDataAsync">重試</button></div>
+				<div>糟糕，載入失敗。 <button @onclick="ReloadDataAsync">重試</button></div>
 			</ErrorContent>
 			<ChildContent>
 				@if (!FilteredPosts.Any())
@@ -53,55 +67,22 @@
 	//接收網址上的 ?tag= 參數
 	[SupplyParameterFromQuery(Name = "tag")]
 	public string? SearchTag { get; set; }
-	private UIState _currentState = UIState.Loading;
-	private PersistingComponentStateSubscription _subscription;
 
 	protected override async Task OnInitializedAsync()
 	{
-		//如果等一下要打包 SSR，請呼叫 PersistData 方法
-		_subscription = ApplicationState.RegisterOnPersisting(PersistData);
+		CategoryState.OnChange += StateHasChanged;
+		PostState.OnChange += StateHasChanged;
 
-		CategoryState.OnChange += HandleCategoryChanged;
-		PostState.OnChange += HandlePostStateChanged;
-
-		//是不是被 WASM 喚醒的？有沒有 SSR 留下來的遺產？
-		if (ApplicationState.TryTakeFromJson<List<PostDto>>("feed_data", out var restored))
-		{
-			// 有遺產 直接沿用，不要打 API，也不要顯示骨架屏
-			PostState.HydratePosts(restored);
-			UpdateStateFromPosts();
-			Console.WriteLine($"SSR遺產數：{PostState.Posts.Count}");
-		}
-		else
-		{
-			await LoadDataAsync();
-			Console.WriteLine($"LoadData數：{PostState.Posts.Count}");
-		}
-	}
-
-	private async Task LoadDataAsync()
-	{
-		try
-		{
-			await PostState.LoadTimeLineAsync();
-			UpdateStateFromPosts();
-			StateHasChanged();
-		}
-		catch
-		{
-			_currentState = UIState.Error;
-		}
-	}
-
-	private void HandlePostStateChanged()
-	{
-		UpdateStateFromPosts();
+		await Task.WhenAll(
+			CategoryState.EnsureInitialCategoriesLoadedAsync(),
+			PostState.EnsureInitialTimelineLoadedAsync());
 		StateHasChanged();
 	}
 
-	private void UpdateStateFromPosts()
+	private async Task ReloadDataAsync()
 	{
-		_currentState = PostState.Posts.Count == 0 ? UIState.Empty : UIState.Success;
+		await PostState.LoadTimeLineAsync();
+		StateHasChanged();
 	}
 
 	private IEnumerable<PostDto> FilteredPosts
@@ -124,24 +105,10 @@
 		}
 	}
 
-	private void HandleCategoryChanged()
+	public void Dispose()
 	{
-		StateHasChanged();
+		CategoryState.OnChange -= StateHasChanged;
+		PostState.OnChange -= StateHasChanged;
 	}
-
-	// 這是只有在 SSR 階段結束、準備把 HTML 送給瀏覽器前，才會被觸發的方法
-	private Task PersistData()
-	{
-		// 將目前的貼文清單打包成 JSON 塞進 HTML 中
-		ApplicationState.PersistAsJson("feed_data", PostState.Posts);
-		return Task.CompletedTask;
-	}
-
-    public void Dispose()
-    {
-        CategoryState.OnChange -= HandleCategoryChanged;
-		PostState.OnChange -= HandlePostStateChanged;
-		_subscription.Dispose();
-    }
 }
 

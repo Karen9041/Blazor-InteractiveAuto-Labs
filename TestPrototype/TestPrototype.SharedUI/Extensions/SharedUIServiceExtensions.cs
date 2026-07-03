@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using TestPrototype.SharedUI.Services;
+using TestPrototype.SharedUI.Services.MockService;
+using TestPrototype.SharedUI.Services.ModalService;
+using TestPrototype.SharedUI.Services.StateService;
 
 namespace TestPrototype.SharedUI
 {

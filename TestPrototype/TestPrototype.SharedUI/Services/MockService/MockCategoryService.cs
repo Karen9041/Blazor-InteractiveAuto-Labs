@@ -1,6 +1,6 @@
 using TestPrototype.SharedUI.Models;
 
-namespace TestPrototype.SharedUI.Services
+namespace TestPrototype.SharedUI.Services.MockService
 {
     public class MockCategoryService : ICategoryService
     {
