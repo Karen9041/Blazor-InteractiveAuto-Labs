@@ -31,6 +31,7 @@ public class SkiaSharpImageService
         DrawBackground(canvas, sourceBitmap);
         DrawOverlay(canvas);
         DrawActivityData(canvas, request.ActivityData);
+        DrawTextWatermark(canvas);
 
         using var image = SKImage.FromBitmap(outputBitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 95);
@@ -144,6 +145,16 @@ public class SkiaSharpImageService
         canvas.DrawText($"{activityData.HeartRate} BPM", 690, 850, SKTextAlign.Left, metaFont, metaPaint);
         canvas.DrawText("TIME", 690, 930, SKTextAlign.Left, labelFont, labelPaint);
         canvas.DrawText(duration, 690, 995, SKTextAlign.Left, metaFont, metaPaint);
+    }
+
+    private static void DrawTextWatermark(SKCanvas canvas)
+    {
+        using var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold);
+        using var watermarkFont = CreateFont(typeface, 54);
+        using var shadowPaint = CreateTextPaint(SKColors.Black.WithAlpha(20));
+        using var watermarkPaint = CreateTextPaint(SKColors.White.WithAlpha(20));
+        canvas.DrawText("JACFIT", 74, 74, SKTextAlign.Left, watermarkFont, shadowPaint);
+        canvas.DrawText("JACFIT",72, 72, SKTextAlign.Left, watermarkFont, watermarkPaint);
     }
 
     private static SKFont CreateFont(SKTypeface typeface, float textSize)
