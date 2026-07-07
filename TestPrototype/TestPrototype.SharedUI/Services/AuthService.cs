@@ -72,7 +72,7 @@ namespace TestPrototype.SharedUI.Services
         }
         public async Task<bool> LoginAppleAsync(string callBackCode)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/mock/login", callBackCode);
+            var response = await _httpClient.PostAsJsonAsync("api/Auth/appleSignIn", callBackCode);
             if (response.IsSuccessStatusCode)
             {
                 ((CustomAuthStateProvider)_authStateProvider).NotifyLoginStateChanged();

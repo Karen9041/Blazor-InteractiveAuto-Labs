@@ -9,14 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-
+builder.Services.AddControllers();
 builder.Services.AddSharedUIServices();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<ServerCookieHandler>();
 builder.Services.AddHttpClient("BffClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7288");
+    client.BaseAddress = new Uri("https://localhost:7230");
 })
 .AddHttpMessageHandler<ServerCookieHandler>();
 
@@ -58,5 +58,5 @@ app.MapRazorComponents<App>()
 
 app.MapMockApiEndpoints();
 app.MapImageEndpoints();
-
+app.MapControllers();
 app.Run();

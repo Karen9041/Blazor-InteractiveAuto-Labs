@@ -1,0 +1,41 @@
+@page "/AppleAuthSuccess"
+@page "/{Culture:length(5)}/AppleAuthSuccess"
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<p>正在與伺服器進行安全驗證，請稍候...</p>
+
+@code {
+    [Parameter] public string? Culture { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? code { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(code))
+        {
+            Navigation.NavigateToLocalized("/login?error=missing_code");
+            return;
+        }
+        var isSuccess = false;
+        try
+        {
+            isSuccess = await AuthService.LoginAppleAsync(code);
+        }
+        catch (Exception)
+        {
+            Navigation.NavigateToLocalized("/login?error=network_error");
+        }
+        if (isSuccess)
+        {
+            Navigation.NavigateToLocalized("/");
+        }
+        else
+        {
+            Navigation.NavigateToLocalized("/login?error=api_auth_failed");
+        }
+
+    }
+}
