@@ -28,6 +28,7 @@ namespace TestPrototype.SharedUI
             services.AddScoped<CategoryStateService>();
             services.AddScoped<NotificationStateService>();
             services.AddScoped<PostStateService>(); 
+            services.AddScoped<PostUploadService>(); 
 
             return services;
         }

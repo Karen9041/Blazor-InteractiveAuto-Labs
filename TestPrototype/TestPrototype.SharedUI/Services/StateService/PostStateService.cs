@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using TestPrototype.SharedUI.Enums;
@@ -15,6 +16,8 @@ public class PostStateService : IDisposable
     private readonly PersistingComponentStateSubscription _subscription;
     private readonly ConcurrentDictionary<string, string> _shareLinkCache = new();
     private bool _hasHydrated;
+    private readonly HttpClient _httpClient;
+    private readonly PostUploadService _postUploadService;
 
     public List<PostDto> Posts { get; private set; } = new();
     public UIState CurrentUIState { get; private set; } = UIState.Loading;
@@ -25,7 +28,8 @@ public class PostStateService : IDisposable
         IPostApiService postApiService,
         IAuthService authService,
         IBrowserShareService browserShareService,
-        PersistentComponentState applicationState)
+        PersistentComponentState applicationState,
+        HttpClient httpClient)
     {
         _postApiService = postApiService;
         _authService = authService;
@@ -38,6 +42,8 @@ public class PostStateService : IDisposable
             HydratePosts(restored);
             _hasHydrated = true;
         }
+
+        _httpClient = httpClient;
     }
 
     public async Task EnsureInitialTimelineLoadedAsync()
@@ -87,9 +93,19 @@ public class PostStateService : IDisposable
 
     public async Task PublishPostAsync(PostDto newPost)
     {
-        var completedPost = await _postApiService.CreatePostAsync(newPost);
-        Posts.Insert(0, completedPost);
-        CurrentUIState = UIState.Success;
+        // 調用獨立的 upload service 處裡繁重的上傳鏈
+        var result = await _postUploadService.PublishCompletePostAsync(newPost);
+
+        if (result != null && result.IsSuccess)
+        {
+            newPost.ImageUrl = result.FinalImageUrl;
+            // Add to Posts list ...
+            CurrentUIState = UIState.Success;
+        }
+        else
+        {
+            CurrentUIState = UIState.Error;
+        }
         NotifyStateChanged();
     }
 
