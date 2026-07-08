@@ -29,12 +29,13 @@ public class PostStateService : IDisposable
         IAuthService authService,
         IBrowserShareService browserShareService,
         PersistentComponentState applicationState,
-        HttpClient httpClient)
+        PostUploadService postUploadService)
     {
         _postApiService = postApiService;
         _authService = authService;
         _browserShareService = browserShareService;
         _applicationState = applicationState;
+        _postUploadService = postUploadService;
         _subscription = _applicationState.RegisterOnPersisting(PersistData, RenderMode.InteractiveAuto);
 
         if (_applicationState.TryTakeFromJson<List<PostDto>>("feed_data", out var restored))
@@ -43,7 +44,6 @@ public class PostStateService : IDisposable
             _hasHydrated = true;
         }
 
-        _httpClient = httpClient;
     }
 
     public async Task EnsureInitialTimelineLoadedAsync()

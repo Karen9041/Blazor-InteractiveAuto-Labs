@@ -32,8 +32,8 @@ namespace TestPrototype.SharedUI.Services
                     byte[] imageBytes = Convert.FromBase64String(base64Data);
 
                     // 2. 向後端索取 GCS Signed URL
-                    var urlRequest = new { ContentType = contentType };
-                    var urlResponse = await _httpClient.PostAsJsonAsync("api/Post/generate-upload-url", urlRequest);
+                    var urlRequest = new UploadURLRequest{ ContentType = contentType };
+                    var urlResponse = await _httpClient.PostAsJsonAsync("https://localhost:7122/api/Post/generate-upload-url", urlRequest);
 
                     if (urlResponse.IsSuccessStatusCode)
                     {
@@ -79,6 +79,11 @@ namespace TestPrototype.SharedUI.Services
         {
             public string UploadUrl { get; set; } = "";
             public string ObjectName { get; set; } = "";
+        }
+
+        private class UploadURLRequest
+        {
+            public string ContentType { get; set; }
         }
     }
 }

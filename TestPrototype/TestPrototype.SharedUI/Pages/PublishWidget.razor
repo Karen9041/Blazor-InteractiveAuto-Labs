@@ -216,7 +216,6 @@
 
 			// 將結果儲存到待發布的貼文中
 			DraftPost.ImageUrl = currentBgImageUrl;
-			DraftPost.Base64Image = currentBgImageUrl;
 
 			StateHasChanged(); // 強制刷新畫面
 		}
@@ -255,6 +254,7 @@
 		});
 
 		DraftPost.ImageUrl = result.ImageUrl;
+        DraftPost.Base64Image = result.ImageUrl;
 		DraftPost.ActivityData = null;
 	}
 
